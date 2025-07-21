@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(142, 71%, 45%);
+  --primary-foreground: hsl(355.7, 100%, 97.3%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+
+  /* Islamic Colors */
+  --islamic-50: hsl(152, 76%, 96%);
+  --islamic-100: hsl(149, 80%, 90%);
+  --islamic-200: hsl(152, 76%, 81%);
+  --islamic-300: hsl(156, 72%, 67%);
+  --islamic-400: hsl(158, 64%, 52%);
+  --islamic-500: hsl(160, 84%, 39%);
+  --islamic-600: hsl(161, 94%, 30%);
+  --islamic-700: hsl(163, 94%, 24%);
+  --islamic-800: hsl(164, 88%, 20%);
+  --islamic-900: hsl(166, 78%, 17%);
+
+  /* Gold Colors */
+  --gold-50: hsl(48, 100%, 96%);
+  --gold-100: hsl(48, 96%, 89%);
+  --gold-200: hsl(48, 97%, 77%);
+  --gold-300: hsl(46, 97%, 65%);
+  --gold-400: hsl(43, 96%, 56%);
+  --gold-500: hsl(38, 92%, 50%);
+  --gold-600: hsl(32, 95%, 44%);
+  --gold-700: hsl(26, 90%, 37%);
+  --gold-800: hsl(23, 83%, 31%);
+  --gold-900: hsl(22, 78%, 26%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(142, 71%, 45%);
+  --primary-foreground: hsl(355.7, 100%, 97.3%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-islamic-50 { color: var(--islamic-50); }
+  .text-islamic-100 { color: var(--islamic-100); }
+  .text-islamic-200 { color: var(--islamic-200); }
+  .text-islamic-300 { color: var(--islamic-300); }
+  .text-islamic-400 { color: var(--islamic-400); }
+  .text-islamic-500 { color: var(--islamic-500); }
+  .text-islamic-600 { color: var(--islamic-600); }
+  .text-islamic-700 { color: var(--islamic-700); }
+  .text-islamic-800 { color: var(--islamic-800); }
+  .text-islamic-900 { color: var(--islamic-900); }
+
+  .bg-islamic-50 { background-color: var(--islamic-50); }
+  .bg-islamic-100 { background-color: var(--islamic-100); }
+  .bg-islamic-200 { background-color: var(--islamic-200); }
+  .bg-islamic-300 { background-color: var(--islamic-300); }
+  .bg-islamic-400 { background-color: var(--islamic-400); }
+  .bg-islamic-500 { background-color: var(--islamic-500); }
+  .bg-islamic-600 { background-color: var(--islamic-600); }
+  .bg-islamic-700 { background-color: var(--islamic-700); }
+  .bg-islamic-800 { background-color: var(--islamic-800); }
+  .bg-islamic-900 { background-color: var(--islamic-900); }
+
+  .border-islamic-50 { border-color: var(--islamic-50); }
+  .border-islamic-100 { border-color: var(--islamic-100); }
+  .border-islamic-200 { border-color: var(--islamic-200); }
+  .border-islamic-300 { border-color: var(--islamic-300); }
+  .border-islamic-400 { border-color: var(--islamic-400); }
+  .border-islamic-500 { border-color: var(--islamic-500); }
+  .border-islamic-600 { border-color: var(--islamic-600); }
+  .border-islamic-700 { border-color: var(--islamic-700); }
+  .border-islamic-800 { border-color: var(--islamic-800); }
+  .border-islamic-900 { border-color: var(--islamic-900); }
+
+  .text-gold-50 { color: var(--gold-50); }
+  .text-gold-100 { color: var(--gold-100); }
+  .text-gold-200 { color: var(--gold-200); }
+  .text-gold-300 { color: var(--gold-300); }
+  .text-gold-400 { color: var(--gold-400); }
+  .text-gold-500 { color: var(--gold-500); }
+  .text-gold-600 { color: var(--gold-600); }
+  .text-gold-700 { color: var(--gold-700); }
+  .text-gold-800 { color: var(--gold-800); }
+  .text-gold-900 { color: var(--gold-900); }
+
+  .bg-gold-50 { background-color: var(--gold-50); }
+  .bg-gold-100 { background-color: var(--gold-100); }
+  .bg-gold-200 { background-color: var(--gold-200); }
+  .bg-gold-300 { background-color: var(--gold-300); }
+  .bg-gold-400 { background-color: var(--gold-400); }
+  .bg-gold-500 { background-color: var(--gold-500); }
+  .bg-gold-600 { background-color: var(--gold-600); }
+  .bg-gold-700 { background-color: var(--gold-700); }
+  .bg-gold-800 { background-color: var(--gold-800); }
+  .bg-gold-900 { background-color: var(--gold-900); }
+
+  .border-gold-50 { border-color: var(--gold-50); }
+  .border-gold-100 { border-color: var(--gold-100); }
+  .border-gold-200 { border-color: var(--gold-200); }
+  .border-gold-300 { border-color: var(--gold-300); }
+  .border-gold-400 { border-color: var(--gold-400); }
+  .border-gold-500 { border-color: var(--gold-500); }
+  .border-gold-600 { border-color: var(--gold-600); }
+  .border-gold-700 { border-color: var(--gold-700); }
+  .border-gold-800 { border-color: var(--gold-800); }
+  .border-gold-900 { border-color: var(--gold-900); }
+}
