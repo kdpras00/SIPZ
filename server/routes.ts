@@ -8,8 +8,12 @@ import {
   insertNotificationSettingsSchema
 } from "@shared/schema";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
   // Current nisab values (updated daily in real app)
   const CURRENT_NISAB = {
     goldPrice: 1000000, // per gram
@@ -18,13 +22,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     silverNisab: 595 // grams
   };
 
-  // Get current user (simplified - in real app use auth middleware)
-  const getCurrentUserId = () => 1;
-
-  // Dashboard stats
-  app.get("/api/dashboard/stats", async (req, res) => {
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Public routes (no authentication required)
+  app.get("/api/nisab", (req, res) => {
+    res.json(CURRENT_NISAB);
+  });
+
+  // Protected routes (require authentication)
+  
+  // Dashboard stats
+  app.get("/api/dashboard/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
       const currentYear = new Date().getFullYear();
       
       const zakatTotal = await storage.getYearlyZakatTotal(userId, currentYear);
@@ -40,21 +60,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         goldPrice: CURRENT_NISAB.goldPrice
       });
     } catch (error) {
+      console.error("Dashboard stats error:", error);
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
   });
 
-  // Get current nisab values
-  app.get("/api/nisab", (req, res) => {
-    res.json(CURRENT_NISAB);
-  });
-
-  // Zakat calculations
-  app.post("/api/zakat/calculate", async (req, res) => {
+  // Zakat calculation routes
+  app.post("/api/zakat/calculate", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const calculationData = insertZakatCalculationSchema.parse({
         ...req.body,
-        userId: getCurrentUserId()
+        userId
       });
       
       const calculation = await storage.createZakatCalculation(calculationData);
@@ -63,28 +80,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid calculation data", errors: error.errors });
       } else {
+        console.error("Calculation error:", error);
         res.status(500).json({ message: "Failed to save calculation" });
       }
     }
   });
 
-  app.get("/api/zakat/calculations", async (req, res) => {
+  app.get("/api/zakat/calculations", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
       const calculations = await storage.getZakatCalculationsByUser(userId);
       res.json(calculations);
     } catch (error) {
+      console.error("Get calculations error:", error);
       res.status(500).json({ message: "Failed to fetch calculations" });
     }
   });
 
-  // Zakat payments
-  app.post("/api/zakat/schedule", async (req, res) => {
+  // Zakat payment routes
+  app.post("/api/zakat/payment", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const paymentData = insertZakatPaymentSchema.parse({
         ...req.body,
-        userId: getCurrentUserId(),
-        status: "scheduled"
+        userId
       });
       
       const payment = await storage.createZakatPayment(paymentData);
@@ -93,59 +112,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid payment data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to schedule payment" });
+        console.error("Payment creation error:", error);
+        res.status(500).json({ message: "Failed to create payment" });
       }
     }
   });
 
-  app.get("/api/zakat/payments", async (req, res) => {
+  app.get("/api/zakat/payments", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
       const payments = await storage.getZakatPaymentsByUser(userId);
       res.json(payments);
     } catch (error) {
+      console.error("Get payments error:", error);
       res.status(500).json({ message: "Failed to fetch payments" });
     }
   });
 
-  app.get("/api/zakat/upcoming", async (req, res) => {
-    try {
-      const userId = getCurrentUserId();
-      const upcoming = await storage.getUpcomingPayments(userId);
-      const overdue = await storage.getOverduePayments(userId);
-      
-      res.json({ upcoming, overdue });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch upcoming payments" });
-    }
-  });
-
-  app.patch("/api/zakat/payments/:id", async (req, res) => {
+  app.patch("/api/zakat/payment/:id", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = req.body;
       
-      if (updates.status === 'paid' && !updates.paidDate) {
-        updates.paidDate = new Date();
-      }
-      
       const payment = await storage.updateZakatPayment(id, updates);
       if (!payment) {
-        return res.status(404).json({ message: "Payment not found" });
+        res.status(404).json({ message: "Payment not found" });
+        return;
       }
       
       res.json(payment);
     } catch (error) {
+      console.error("Payment update error:", error);
       res.status(500).json({ message: "Failed to update payment" });
     }
   });
 
-  // Infaq & Shadaqoh
-  app.post("/api/infaq", async (req, res) => {
+  app.get("/api/zakat/upcoming", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
+      const [upcoming, overdue] = await Promise.all([
+        storage.getUpcomingPayments(userId),
+        storage.getOverduePayments(userId)
+      ]);
+      
+      res.json({ upcoming, overdue });
+    } catch (error) {
+      console.error("Upcoming payments error:", error);
+      res.status(500).json({ message: "Failed to fetch upcoming payments" });
+    }
+  });
+
+  // Infaq & Shadaqoh routes
+  app.post("/api/infaq", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
       const infaqData = insertInfaqShadaqohSchema.parse({
         ...req.body,
-        userId: getCurrentUserId()
+        userId
       });
       
       const infaq = await storage.createInfaqShadaqoh(infaqData);
@@ -154,79 +177,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid infaq data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to save infaq record" });
+        console.error("Infaq creation error:", error);
+        res.status(500).json({ message: "Failed to create infaq record" });
       }
     }
   });
 
-  app.get("/api/infaq", async (req, res) => {
+  app.get("/api/infaq", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
       const infaqRecords = await storage.getInfaqShadaqohByUser(userId);
       res.json(infaqRecords);
     } catch (error) {
+      console.error("Get infaq error:", error);
       res.status(500).json({ message: "Failed to fetch infaq records" });
     }
   });
 
-  app.get("/api/infaq/recent", async (req, res) => {
+  app.get("/api/infaq/recent", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
-      const limit = parseInt(req.query.limit as string) || 5;
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 10;
       const recentInfaq = await storage.getRecentInfaqShadaqoh(userId, limit);
       res.json(recentInfaq);
     } catch (error) {
+      console.error("Recent infaq error:", error);
       res.status(500).json({ message: "Failed to fetch recent infaq" });
     }
   });
 
-  // Notifications
-  app.get("/api/notifications", async (req, res) => {
+  // Notification routes
+  app.get("/api/notifications", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
       const notifications = await storage.getNotificationsByUser(userId);
       res.json(notifications);
     } catch (error) {
+      console.error("Notifications error:", error);
       res.status(500).json({ message: "Failed to fetch notifications" });
     }
   });
 
-  app.get("/api/notifications/count", async (req, res) => {
-    try {
-      const userId = getCurrentUserId();
-      const count = await storage.getUnreadNotificationCount(userId);
-      res.json({ count });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch notification count" });
-    }
-  });
-
-  app.patch("/api/notifications/:id/read", async (req, res) => {
+  app.patch("/api/notifications/:id/read", isAuthenticated, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.markNotificationAsRead(id);
       res.json({ success: true });
     } catch (error) {
+      console.error("Mark notification read error:", error);
       res.status(500).json({ message: "Failed to mark notification as read" });
     }
   });
 
-  // Notification settings
-  app.get("/api/notifications/settings", async (req, res) => {
+  app.get("/api/notifications/count", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
-      const settings = await storage.getNotificationSettings(userId);
+      const userId = req.user.claims.sub;
+      const count = await storage.getUnreadNotificationCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Notification count error:", error);
+      res.status(500).json({ message: "Failed to fetch notification count" });
+    }
+  });
+
+  // Notification settings routes
+  app.get("/api/notifications/settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      let settings = await storage.getNotificationSettings(userId);
+      
+      if (!settings) {
+        // Create default settings
+        settings = await storage.createOrUpdateNotificationSettings({
+          userId,
+          yearlyReminderEnabled: true,
+          yearlyReminderDays: 30,
+          monthlyReminderEnabled: false,
+          monthlyReminderDate: 7,
+          emailNotificationEnabled: true,
+          email: null
+        });
+      }
+      
       res.json(settings);
     } catch (error) {
+      console.error("Notification settings error:", error);
       res.status(500).json({ message: "Failed to fetch notification settings" });
     }
   });
 
-  app.post("/api/notifications/settings", async (req, res) => {
+  app.post("/api/notifications/settings", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const settingsData = insertNotificationSettingsSchema.parse({
         ...req.body,
-        userId: getCurrentUserId()
+        userId
       });
       
       const settings = await storage.createOrUpdateNotificationSettings(settingsData);
@@ -235,57 +280,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid settings data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to save notification settings" });
+        console.error("Settings update error:", error);
+        res.status(500).json({ message: "Failed to update notification settings" });
       }
     }
   });
 
-  // Reports
-  app.get("/api/reports/summary", async (req, res) => {
+  // Reports routes
+  app.get("/api/reports/yearly", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
       const year = parseInt(req.query.year as string) || new Date().getFullYear();
       
-      const zakatTotal = await storage.getYearlyZakatTotal(userId, year);
-      const infaqTotal = await storage.getYearlyInfaqTotal(userId, year);
-      const transactions = await storage.getTransactionsByUser(userId, year);
-      
-      const infaqOnly = transactions.filter(t => 'type' in t && t.type === 'infaq');
-      const shadaqohOnly = transactions.filter(t => 'type' in t && t.type === 'shadaqoh');
-      const totalInfaqAmount = infaqOnly.reduce((sum, t) => sum + Number(t.amount), 0);
-      const totalShadaqohAmount = shadaqohOnly.reduce((sum, t) => sum + Number(t.amount), 0);
+      const [zakatTotal, infaqTotal, transactions] = await Promise.all([
+        storage.getYearlyZakatTotal(userId, year),
+        storage.getYearlyInfaqTotal(userId, year),
+        storage.getTransactionsByUser(userId, year)
+      ]);
       
       res.json({
-        totalZakat: zakatTotal,
-        totalInfaq: totalInfaqAmount,
-        totalShadaqoh: totalShadaqohAmount,
-        totalTransactions: transactions.length,
-        year
+        year,
+        zakatTotal,
+        infaqTotal,
+        total: zakatTotal + infaqTotal,
+        transactions
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch report summary" });
+      console.error("Yearly report error:", error);
+      res.status(500).json({ message: "Failed to generate yearly report" });
     }
   });
 
-  app.get("/api/reports/transactions", async (req, res) => {
+  app.get("/api/reports/transactions", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getCurrentUserId();
+      const userId = req.user.claims.sub;
       const year = req.query.year ? parseInt(req.query.year as string) : undefined;
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
       
-      const allTransactions = await storage.getTransactionsByUser(userId, year);
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const transactions = allTransactions.slice(startIndex, endIndex);
-      
-      res.json({
-        transactions,
-        total: allTransactions.length,
-        page,
-        totalPages: Math.ceil(allTransactions.length / limit)
-      });
+      const transactions = await storage.getTransactionsByUser(userId, year);
+      res.json(transactions);
     } catch (error) {
+      console.error("Transactions report error:", error);
       res.status(500).json({ message: "Failed to fetch transactions" });
     }
   });

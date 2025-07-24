@@ -1,12 +1,12 @@
-import { 
-  users, 
-  zakatCalculations, 
-  zakatPayments, 
-  infaqShadaqoh, 
-  notifications, 
+import {
+  users,
+  zakatCalculations,
+  zakatPayments,
+  infaqShadaqoh,
+  notifications,
   notificationSettings,
-  type User, 
-  type InsertUser,
+  type User,
+  type UpsertUser,
   type ZakatCalculation,
   type InsertZakatCalculation,
   type ZakatPayment,
@@ -18,273 +18,307 @@ import {
   type NotificationSettings,
   type InsertNotificationSettings
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, gte, lte, sum, count } from "drizzle-orm";
 
+// Interface for storage operations
 export interface IStorage {
-  // User operations
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // User operations for Replit Auth
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Zakat calculations
   createZakatCalculation(calculation: InsertZakatCalculation): Promise<ZakatCalculation>;
-  getZakatCalculationsByUser(userId: number): Promise<ZakatCalculation[]>;
+  getZakatCalculationsByUser(userId: string): Promise<ZakatCalculation[]>;
   getZakatCalculation(id: number): Promise<ZakatCalculation | undefined>;
 
   // Zakat payments
   createZakatPayment(payment: InsertZakatPayment): Promise<ZakatPayment>;
-  getZakatPaymentsByUser(userId: number): Promise<ZakatPayment[]>;
+  getZakatPaymentsByUser(userId: string): Promise<ZakatPayment[]>;
   updateZakatPayment(id: number, updates: Partial<ZakatPayment>): Promise<ZakatPayment | undefined>;
-  getUpcomingPayments(userId: number): Promise<ZakatPayment[]>;
-  getOverduePayments(userId: number): Promise<ZakatPayment[]>;
+  getUpcomingPayments(userId: string): Promise<ZakatPayment[]>;
+  getOverduePayments(userId: string): Promise<ZakatPayment[]>;
 
   // Infaq & Shadaqoh
   createInfaqShadaqoh(infaq: InsertInfaqShadaqoh): Promise<InfaqShadaqoh>;
-  getInfaqShadaqohByUser(userId: number): Promise<InfaqShadaqoh[]>;
-  getRecentInfaqShadaqoh(userId: number, limit?: number): Promise<InfaqShadaqoh[]>;
+  getInfaqShadaqohByUser(userId: string): Promise<InfaqShadaqoh[]>;
+  getRecentInfaqShadaqoh(userId: string, limit?: number): Promise<InfaqShadaqoh[]>;
 
   // Notifications
   createNotification(notification: InsertNotification): Promise<Notification>;
-  getNotificationsByUser(userId: number): Promise<Notification[]>;
+  getNotificationsByUser(userId: string): Promise<Notification[]>;
   markNotificationAsRead(id: number): Promise<void>;
-  getUnreadNotificationCount(userId: number): Promise<number>;
+  getUnreadNotificationCount(userId: string): Promise<number>;
 
   // Notification settings
   createOrUpdateNotificationSettings(settings: InsertNotificationSettings): Promise<NotificationSettings>;
-  getNotificationSettings(userId: number): Promise<NotificationSettings | undefined>;
+  getNotificationSettings(userId: string): Promise<NotificationSettings | undefined>;
 
   // Statistics
-  getYearlyZakatTotal(userId: number, year: number): Promise<number>;
-  getYearlyInfaqTotal(userId: number, year: number): Promise<number>;
-  getTransactionsByUser(userId: number, year?: number): Promise<Array<ZakatPayment | InfaqShadaqoh>>;
+  getYearlyZakatTotal(userId: string, year: number): Promise<number>;
+  getYearlyInfaqTotal(userId: string, year: number): Promise<number>;
+  getTransactionsByUser(userId: string, year?: number): Promise<Array<ZakatPayment | InfaqShadaqoh>>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private zakatCalculations: Map<number, ZakatCalculation>;
-  private zakatPayments: Map<number, ZakatPayment>;
-  private infaqShadaqoh: Map<number, InfaqShadaqoh>;
-  private notifications: Map<number, Notification>;
-  private notificationSettings: Map<number, NotificationSettings>;
-  private currentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.zakatCalculations = new Map();
-    this.zakatPayments = new Map();
-    this.infaqShadaqoh = new Map();
-    this.notifications = new Map();
-    this.notificationSettings = new Map();
-    this.currentId = 1;
-
-    // Create default user
-    this.createUser({
-      username: "ahmad",
-      password: "password",
-      email: "ahmad.rahman@email.com",
-      name: "Ahmad Rahman"
-    });
+export class DatabaseStorage implements IStorage {
+  // User operations for Replit Auth
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return user;
   }
 
+  // Zakat calculations
   async createZakatCalculation(calculation: InsertZakatCalculation): Promise<ZakatCalculation> {
-    const id = this.currentId++;
-    const zakatCalc: ZakatCalculation = { 
-      ...calculation, 
-      id, 
-      createdAt: new Date() 
-    };
-    this.zakatCalculations.set(id, zakatCalc);
-    return zakatCalc;
+    const [result] = await db.insert(zakatCalculations).values(calculation).returning();
+    return result;
   }
 
-  async getZakatCalculationsByUser(userId: number): Promise<ZakatCalculation[]> {
-    return Array.from(this.zakatCalculations.values())
-      .filter(calc => calc.userId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  async getZakatCalculationsByUser(userId: string): Promise<ZakatCalculation[]> {
+    return await db
+      .select()
+      .from(zakatCalculations)
+      .where(eq(zakatCalculations.userId, userId))
+      .orderBy(desc(zakatCalculations.createdAt));
   }
 
   async getZakatCalculation(id: number): Promise<ZakatCalculation | undefined> {
-    return this.zakatCalculations.get(id);
+    const [result] = await db
+      .select()
+      .from(zakatCalculations)
+      .where(eq(zakatCalculations.id, id));
+    return result || undefined;
   }
 
+  // Zakat payments
   async createZakatPayment(payment: InsertZakatPayment): Promise<ZakatPayment> {
-    const id = this.currentId++;
-    const zakatPayment: ZakatPayment = { 
-      ...payment, 
-      id, 
-      createdAt: new Date() 
-    };
-    this.zakatPayments.set(id, zakatPayment);
-    return zakatPayment;
+    const [result] = await db.insert(zakatPayments).values(payment).returning();
+    return result;
   }
 
-  async getZakatPaymentsByUser(userId: number): Promise<ZakatPayment[]> {
-    return Array.from(this.zakatPayments.values())
-      .filter(payment => payment.userId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  async getZakatPaymentsByUser(userId: string): Promise<ZakatPayment[]> {
+    return await db
+      .select()
+      .from(zakatPayments)
+      .where(eq(zakatPayments.userId, userId))
+      .orderBy(desc(zakatPayments.createdAt));
   }
 
   async updateZakatPayment(id: number, updates: Partial<ZakatPayment>): Promise<ZakatPayment | undefined> {
-    const payment = this.zakatPayments.get(id);
-    if (!payment) return undefined;
-    
-    const updatedPayment = { ...payment, ...updates };
-    this.zakatPayments.set(id, updatedPayment);
-    return updatedPayment;
+    const [result] = await db
+      .update(zakatPayments)
+      .set(updates)
+      .where(eq(zakatPayments.id, id))
+      .returning();
+    return result || undefined;
   }
 
-  async getUpcomingPayments(userId: number): Promise<ZakatPayment[]> {
+  async getUpcomingPayments(userId: string): Promise<ZakatPayment[]> {
     const now = new Date();
-    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    
-    return Array.from(this.zakatPayments.values())
-      .filter(payment => 
-        payment.userId === userId && 
-        payment.status === 'scheduled' &&
-        payment.dueDate &&
-        new Date(payment.dueDate) <= oneWeekFromNow
+    return await db
+      .select()
+      .from(zakatPayments)
+      .where(
+        and(
+          eq(zakatPayments.userId, userId),
+          eq(zakatPayments.status, "scheduled"),
+          gte(zakatPayments.dueDate, now)
+        )
       )
-      .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime());
+      .orderBy(zakatPayments.dueDate);
   }
 
-  async getOverduePayments(userId: number): Promise<ZakatPayment[]> {
+  async getOverduePayments(userId: string): Promise<ZakatPayment[]> {
     const now = new Date();
-    
-    return Array.from(this.zakatPayments.values())
-      .filter(payment => 
-        payment.userId === userId && 
-        payment.status === 'scheduled' &&
-        payment.dueDate &&
-        new Date(payment.dueDate) < now
-      );
+    return await db
+      .select()
+      .from(zakatPayments)
+      .where(
+        and(
+          eq(zakatPayments.userId, userId),
+          eq(zakatPayments.status, "scheduled"),
+          lte(zakatPayments.dueDate, now)
+        )
+      )
+      .orderBy(zakatPayments.dueDate);
   }
 
+  // Infaq & Shadaqoh
   async createInfaqShadaqoh(infaq: InsertInfaqShadaqoh): Promise<InfaqShadaqoh> {
-    const id = this.currentId++;
-    const infaqRecord: InfaqShadaqoh = { 
-      ...infaq, 
-      id, 
-      createdAt: new Date() 
-    };
-    this.infaqShadaqoh.set(id, infaqRecord);
-    return infaqRecord;
+    const [result] = await db.insert(infaqShadaqoh).values(infaq).returning();
+    return result;
   }
 
-  async getInfaqShadaqohByUser(userId: number): Promise<InfaqShadaqoh[]> {
-    return Array.from(this.infaqShadaqoh.values())
-      .filter(infaq => infaq.userId === userId)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  async getInfaqShadaqohByUser(userId: string): Promise<InfaqShadaqoh[]> {
+    return await db
+      .select()
+      .from(infaqShadaqoh)
+      .where(eq(infaqShadaqoh.userId, userId))
+      .orderBy(desc(infaqShadaqoh.date));
   }
 
-  async getRecentInfaqShadaqoh(userId: number, limit: number = 5): Promise<InfaqShadaqoh[]> {
-    const allInfaq = await this.getInfaqShadaqohByUser(userId);
-    return allInfaq.slice(0, limit);
+  async getRecentInfaqShadaqoh(userId: string, limit: number = 10): Promise<InfaqShadaqoh[]> {
+    return await db
+      .select()
+      .from(infaqShadaqoh)
+      .where(eq(infaqShadaqoh.userId, userId))
+      .orderBy(desc(infaqShadaqoh.date))
+      .limit(limit);
   }
 
+  // Notifications
   async createNotification(notification: InsertNotification): Promise<Notification> {
-    const id = this.currentId++;
-    const notif: Notification = { 
-      ...notification, 
-      id, 
-      createdAt: new Date() 
-    };
-    this.notifications.set(id, notif);
-    return notif;
+    const [result] = await db.insert(notifications).values(notification).returning();
+    return result;
   }
 
-  async getNotificationsByUser(userId: number): Promise<Notification[]> {
-    return Array.from(this.notifications.values())
-      .filter(notif => notif.userId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  async getNotificationsByUser(userId: string): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
   }
 
   async markNotificationAsRead(id: number): Promise<void> {
-    const notification = this.notifications.get(id);
-    if (notification) {
-      this.notifications.set(id, { ...notification, isRead: true });
-    }
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id));
   }
 
-  async getUnreadNotificationCount(userId: number): Promise<number> {
-    return Array.from(this.notifications.values())
-      .filter(notif => notif.userId === userId && !notif.isRead).length;
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.userId, userId),
+          eq(notifications.isRead, false)
+        )
+      );
+    return result?.count || 0;
   }
 
+  // Notification settings
   async createOrUpdateNotificationSettings(settings: InsertNotificationSettings): Promise<NotificationSettings> {
-    const existing = Array.from(this.notificationSettings.values())
-      .find(s => s.userId === settings.userId);
+    const [result] = await db
+      .insert(notificationSettings)
+      .values(settings)
+      .onConflictDoUpdate({
+        target: notificationSettings.userId,
+        set: settings,
+      })
+      .returning();
+    return result;
+  }
+
+  async getNotificationSettings(userId: string): Promise<NotificationSettings | undefined> {
+    const [result] = await db
+      .select()
+      .from(notificationSettings)
+      .where(eq(notificationSettings.userId, userId));
+    return result || undefined;
+  }
+
+  // Statistics
+  async getYearlyZakatTotal(userId: string, year: number): Promise<number> {
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year + 1, 0, 1);
+
+    const [result] = await db
+      .select({ total: sum(zakatPayments.amount) })
+      .from(zakatPayments)
+      .where(
+        and(
+          eq(zakatPayments.userId, userId),
+          eq(zakatPayments.status, "paid"),
+          gte(zakatPayments.paidDate, startDate),
+          lte(zakatPayments.paidDate, endDate)
+        )
+      );
     
-    if (existing) {
-      const id = existing.id;
-      const updated: NotificationSettings = { ...existing, ...settings };
-      this.notificationSettings.set(id, updated);
-      return updated;
-    } else {
-      const id = this.currentId++;
-      const newSettings: NotificationSettings = { ...settings, id };
-      this.notificationSettings.set(id, newSettings);
-      return newSettings;
+    return Number(result?.total || 0);
+  }
+
+  async getYearlyInfaqTotal(userId: string, year: number): Promise<number> {
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year + 1, 0, 1);
+
+    const [result] = await db
+      .select({ total: sum(infaqShadaqoh.amount) })
+      .from(infaqShadaqoh)
+      .where(
+        and(
+          eq(infaqShadaqoh.userId, userId),
+          gte(infaqShadaqoh.date, startDate),
+          lte(infaqShadaqoh.date, endDate)
+        )
+      );
+    
+    return Number(result?.total || 0);
+  }
+
+  async getTransactionsByUser(userId: string, year?: number): Promise<Array<ZakatPayment | InfaqShadaqoh>> {
+    const transactions: Array<ZakatPayment | InfaqShadaqoh> = [];
+
+    let zakatQuery = db
+      .select()
+      .from(zakatPayments)
+      .where(eq(zakatPayments.userId, userId));
+
+    let infaqQuery = db
+      .select()
+      .from(infaqShadaqoh)
+      .where(eq(infaqShadaqoh.userId, userId));
+
+    if (year) {
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year + 1, 0, 1);
+      
+      zakatQuery = zakatQuery.where(
+        and(
+          eq(zakatPayments.userId, userId),
+          gte(zakatPayments.createdAt, startDate),
+          lte(zakatPayments.createdAt, endDate)
+        )
+      );
+
+      infaqQuery = infaqQuery.where(
+        and(
+          eq(infaqShadaqoh.userId, userId),
+          gte(infaqShadaqoh.date, startDate),
+          lte(infaqShadaqoh.date, endDate)
+        )
+      );
     }
-  }
 
-  async getNotificationSettings(userId: number): Promise<NotificationSettings | undefined> {
-    return Array.from(this.notificationSettings.values())
-      .find(settings => settings.userId === userId);
-  }
+    const [zakatResults, infaqResults] = await Promise.all([
+      zakatQuery,
+      infaqQuery
+    ]);
 
-  async getYearlyZakatTotal(userId: number, year: number): Promise<number> {
-    const payments = Array.from(this.zakatPayments.values())
-      .filter(payment => 
-        payment.userId === userId && 
-        payment.status === 'paid' &&
-        payment.paidDate &&
-        new Date(payment.paidDate).getFullYear() === year
-      );
-    
-    return payments.reduce((total, payment) => total + Number(payment.amount), 0);
-  }
-
-  async getYearlyInfaqTotal(userId: number, year: number): Promise<number> {
-    const infaqRecords = Array.from(this.infaqShadaqoh.values())
-      .filter(infaq => 
-        infaq.userId === userId && 
-        new Date(infaq.date).getFullYear() === year
-      );
-    
-    return infaqRecords.reduce((total, infaq) => total + Number(infaq.amount), 0);
-  }
-
-  async getTransactionsByUser(userId: number, year?: number): Promise<Array<ZakatPayment | InfaqShadaqoh>> {
-    const payments = Array.from(this.zakatPayments.values())
-      .filter(payment => payment.userId === userId)
-      .filter(payment => !year || (payment.paidDate && new Date(payment.paidDate).getFullYear() === year));
-    
-    const infaqRecords = Array.from(this.infaqShadaqoh.values())
-      .filter(infaq => infaq.userId === userId)
-      .filter(infaq => !year || new Date(infaq.date).getFullYear() === year);
-    
-    const allTransactions = [...payments, ...infaqRecords];
-    
-    return allTransactions.sort((a, b) => {
-      const dateA = 'paidDate' in a ? (a.paidDate || a.createdAt) : a.date;
-      const dateB = 'paidDate' in b ? (b.paidDate || b.createdAt) : b.date;
-      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    transactions.push(...zakatResults, ...infaqResults);
+    return transactions.sort((a, b) => {
+      const dateA = 'paidDate' in a ? a.paidDate || a.createdAt : a.date;
+      const dateB = 'paidDate' in b ? b.paidDate || b.createdAt : b.date;
+      return new Date(dateB!).getTime() - new Date(dateA!).getTime();
     });
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

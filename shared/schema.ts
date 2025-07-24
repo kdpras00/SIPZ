@@ -1,18 +1,32 @@
-import { pgTable, text, serial, integer, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, boolean, varchar, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table for Replit Auth
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  email: text("email"),
-  name: text("name").notNull(),
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const zakatCalculations = pgTable("zakat_calculations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   type: text("type").notNull(), // 'penghasilan', 'emas', 'perdagangan', 'pertanian'
   monthlyIncome: decimal("monthly_income", { precision: 15, scale: 2 }),
   yearlyIncome: decimal("yearly_income", { precision: 15, scale: 2 }),
@@ -31,7 +45,7 @@ export const zakatCalculations = pgTable("zakat_calculations", {
 
 export const zakatPayments = pgTable("zakat_payments", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   calculationId: integer("calculation_id"),
   type: text("type").notNull(),
   amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
@@ -45,7 +59,7 @@ export const zakatPayments = pgTable("zakat_payments", {
 
 export const infaqShadaqoh = pgTable("infaq_shadaqoh", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   type: text("type").notNull(), // 'infaq', 'shadaqoh', 'wakaf', 'fidyah', 'other'
   amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
   recipient: text("recipient").notNull(),
@@ -56,7 +70,7 @@ export const infaqShadaqoh = pgTable("infaq_shadaqoh", {
 
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: varchar("user_id").notNull(),
   type: text("type").notNull(), // 'zakat_reminder', 'infaq_reminder', 'payment_overdue'
   title: text("title").notNull(),
   message: text("message").notNull(),
@@ -66,7 +80,7 @@ export const notifications = pgTable("notifications", {
 
 export const notificationSettings = pgTable("notification_settings", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().unique(),
+  userId: varchar("user_id").notNull().unique(),
   yearlyReminderEnabled: boolean("yearly_reminder_enabled").notNull().default(true),
   yearlyReminderDays: integer("yearly_reminder_days").notNull().default(30),
   yearlyReminderMonth: text("yearly_reminder_month").notNull().default("ramadhan"),
@@ -79,7 +93,8 @@ export const notificationSettings = pgTable("notification_settings", {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertZakatCalculationSchema = createInsertSchema(zakatCalculations).omit({
@@ -106,7 +121,8 @@ export const insertNotificationSettingsSchema = createInsertSchema(notificationS
   id: true,
 });
 
-// Types
+// Types for Replit Auth
+export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ZakatCalculation = typeof zakatCalculations.$inferSelect;

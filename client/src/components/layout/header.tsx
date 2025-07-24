@@ -1,114 +1,75 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Bell, Menu, User, Church } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
+import { Bell, LogOut, User } from "lucide-react";
+import type { User as UserType } from "@shared/schema";
 
-export default function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const { data: notificationCount } = useQuery({
-    queryKey: ["/api/notifications/count"],
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ["/api/user"],
-    enabled: false, // Will implement user context later
-  });
+export function Header() {
+  const { user } = useAuth() as { user?: UserType };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-islamic-600 to-islamic-700 rounded-lg flex items-center justify-center">
-                <Church className="text-white text-lg" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">SIPZ</h1>
-                <p className="text-xs text-gray-500">Sistem Informasi Pengelolaan Zakat</p>
-              </div>
-            </div>
-          </div>
-          
-          <nav className="hidden md:flex items-center space-x-6">
-            <a href="/" className="text-islamic-600 font-medium border-b-2 border-islamic-600 pb-1">
-              Dashboard
-            </a>
-            <a href="/kalkulator" className="text-gray-600 hover:text-islamic-600 transition-colors">
-              Kalkulator
-            </a>
-            <a href="/pembayaran" className="text-gray-600 hover:text-islamic-600 transition-colors">
-              Pembayaran
-            </a>
-            <a href="/infaq" className="text-gray-600 hover:text-islamic-600 transition-colors">
-              Infaq & Shadaqoh
-            </a>
-            <a href="/status" className="text-gray-600 hover:text-islamic-600 transition-colors">
-              Status Penyaluran
-            </a>
-            <a href="/laporan" className="text-gray-600 hover:text-islamic-600 transition-colors">
-              Laporan
-            </a>
-            <a href="/edukasi" className="text-gray-600 hover:text-islamic-600 transition-colors">
-              Edukasi
-            </a>
-          </nav>
-
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-5 w-5 text-gray-600" />
-              {notificationCount?.count > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                >
-                  {notificationCount.count}
-                </Badge>
-              )}
-            </Button>
-            
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-islamic-100 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-islamic-600" />
-              </div>
-              <span className="hidden sm:block text-sm font-medium">
-                {user?.name || "Ahmad Rahman"}
-              </span>
-            </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
+    <div className="md:pl-64">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Selamat datang di SIPZ
+          </h1>
         </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <nav className="flex flex-col space-y-2">
-              <a href="#dashboard" className="text-islamic-600 font-medium py-2 px-3 rounded bg-islamic-50">
-                Dashboard
-              </a>
-              <a href="#calculator" className="text-gray-600 hover:text-islamic-600 py-2 px-3 rounded hover:bg-gray-50">
-                Kalkulator
-              </a>
-              <a href="#infaq" className="text-gray-600 hover:text-islamic-600 py-2 px-3 rounded hover:bg-gray-50">
-                Infaq & Shadaqoh
-              </a>
-              <a href="#laporan" className="text-gray-600 hover:text-islamic-600 py-2 px-3 rounded hover:bg-gray-50">
-                Laporan
-              </a>
-            </nav>
-          </div>
-        )}
+        
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm">
+            <Bell className="h-4 w-4" />
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage 
+                    src={user?.profileImageUrl || undefined} 
+                    alt={user?.firstName || "User"} 
+                  />
+                  <AvatarFallback>
+                    {user?.firstName?.[0] || user?.email?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {user?.firstName || user?.email}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profil</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => window.location.href = '/api/logout'}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Keluar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-    </header>
+    </div>
   );
 }
