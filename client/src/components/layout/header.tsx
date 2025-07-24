@@ -32,18 +32,27 @@ export default function Header() {
             </div>
           </div>
           
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="#dashboard" className="text-islamic-600 font-medium border-b-2 border-islamic-600 pb-1">
+          <nav className="hidden md:flex items-center space-x-6">
+            <a href="/" className="text-islamic-600 font-medium border-b-2 border-islamic-600 pb-1">
               Dashboard
             </a>
-            <a href="#calculator" className="text-gray-600 hover:text-islamic-600 transition-colors">
+            <a href="/kalkulator" className="text-gray-600 hover:text-islamic-600 transition-colors">
               Kalkulator
             </a>
-            <a href="#infaq" className="text-gray-600 hover:text-islamic-600 transition-colors">
+            <a href="/pembayaran" className="text-gray-600 hover:text-islamic-600 transition-colors">
+              Pembayaran
+            </a>
+            <a href="/infaq" className="text-gray-600 hover:text-islamic-600 transition-colors">
               Infaq & Shadaqoh
             </a>
-            <a href="#laporan" className="text-gray-600 hover:text-islamic-600 transition-colors">
+            <a href="/status" className="text-gray-600 hover:text-islamic-600 transition-colors">
+              Status Penyaluran
+            </a>
+            <a href="/laporan" className="text-gray-600 hover:text-islamic-600 transition-colors">
               Laporan
+            </a>
+            <a href="/edukasi" className="text-gray-600 hover:text-islamic-600 transition-colors">
+              Edukasi
             </a>
           </nav>
 

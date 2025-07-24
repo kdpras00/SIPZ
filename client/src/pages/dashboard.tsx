@@ -1,13 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
-import ZakatCalculator from "@/components/zakat-calculator";
-import InfaqForm from "@/components/infaq-form";
-import PaymentNotifications from "@/components/payment-notifications";
-import Reports from "@/components/reports";
 import { 
   Calculator, 
   Heart, 
@@ -15,194 +11,258 @@ import {
   HandHeart, 
   Coins, 
   Calendar,
-  TrendingUp
+  CreditCard,
+  Bell,
+  BookOpen,
+  TrendingUp,
+  Users
 } from "lucide-react";
 import { formatCurrency } from "@/lib/zakat-calculator";
 
-function DashboardOverview() {
-  const { data: stats, isLoading } = useQuery({
+export default function Dashboard() {
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
 
-  const { data: nisabData } = useQuery({
-    queryKey: ["/api/nisab"],
+  const { data: upcomingPayments, isLoading: paymentsLoading } = useQuery({
+    queryKey: ["/api/zakat/upcoming"],
   });
 
-  if (isLoading) {
-    return (
-      <section className="mb-12">
-        <div className="mb-8">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-2 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 animate-pulse">
-              <div className="flex items-center justify-between mb-4">
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-8 bg-gray-200 rounded w-32"></div>
-                </div>
-                <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-              </div>
-              <div className="flex items-center">
-                <div className="h-3 bg-gray-200 rounded w-16 mr-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-20"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const quickActions = [
+    {
+      title: "Hitung Zakat",
+      description: "Kalkulator zakat untuk berbagai jenis harta",
+      icon: Calculator,
+      href: "/kalkulator",
+      color: "text-islamic-600",
+      bgColor: "bg-islamic-50 hover:bg-islamic-100"
+    },
+    {
+      title: "Kelola Pembayaran", 
+      description: "Jadwalkan dan pantau pembayaran zakat",
+      icon: CreditCard,
+      href: "/pembayaran",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 hover:bg-blue-100"
+    },
+    {
+      title: "Infaq & Shadaqoh",
+      description: "Catat sedekah dan amal jariyah Anda",
+      icon: Heart,
+      href: "/infaq",
+      color: "text-red-600", 
+      bgColor: "bg-red-50 hover:bg-red-100"
+    },
+    {
+      title: "Status Penyaluran",
+      description: "Pantau status distribusi zakat Anda",
+      icon: Users,
+      href: "/status",
+      color: "text-green-600",
+      bgColor: "bg-green-50 hover:bg-green-100"
+    },
+    {
+      title: "Laporan",
+      description: "Lihat laporan dan statistik lengkap",
+      icon: BarChart3,
+      href: "/laporan", 
+      color: "text-purple-600",
+      bgColor: "bg-purple-50 hover:bg-purple-100"
+    },
+    {
+      title: "Notifikasi",
+      description: "Atur pengingat dan notifikasi",
+      icon: Bell,
+      href: "/notifikasi",
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50 hover:bg-yellow-100"
+    },
+    {
+      title: "Edukasi Zakat",
+      description: "Pelajari tuntunan zakat dalam Islam",
+      icon: BookOpen,
+      href: "/edukasi",
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50 hover:bg-indigo-100"
     }
-  };
+  ];
 
-  return (
-    <section className="mb-12">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Assalamu'alaikum, Ahmad</h2>
-        <p className="text-gray-600">Kelola zakat, infaq, dan shadaqoh Anda dengan mudah</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-white shadow-sm border border-gray-100">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Zakat Tahun Ini</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats ? formatCurrency(stats.zakatTotal) : formatCurrency(0)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-islamic-100 rounded-lg flex items-center justify-center">
-                <HandHeart className="text-islamic-600 h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-green-600 font-medium">+12%</span>
-              <span className="text-gray-500 ml-2">dari tahun lalu</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm border border-gray-100">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Infaq & Shadaqoh</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats ? formatCurrency(stats.infaqTotal) : formatCurrency(0)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-gold-100 rounded-lg flex items-center justify-center">
-                <Heart className="text-gold-600 h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-green-600 font-medium">+8%</span>
-              <span className="text-gray-500 ml-2">bulan ini</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm border border-gray-100">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Zakat Terjadwal</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats ? stats.scheduledCount : 0}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="text-blue-600 h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-blue-600 font-medium">2 mendatang</span>
-              <span className="text-gray-500 ml-2">minggu ini</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white shadow-sm border border-gray-100">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Nisab Emas Hari Ini</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats ? formatCurrency(stats.nisabGold) : formatCurrency(85000000)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Coins className="text-yellow-600 h-6 w-6" />
-              </div>
-            </div>
-            <div className="mt-4 flex items-center text-sm">
-              <span className="text-gray-600 font-medium">85 gram</span>
-              <span className="text-gray-500 ml-2">emas 24k</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Button
-          onClick={() => scrollToSection('calculator')}
-          className="bg-gradient-to-br from-islamic-600 to-islamic-700 text-white rounded-xl p-6 h-auto text-left hover:from-islamic-700 hover:to-islamic-800 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-between mb-4 w-full">
-            <h3 className="text-lg font-semibold">Hitung Zakat</h3>
-            <Calculator className="h-6 w-6 opacity-80" />
-          </div>
-          <p className="text-islamic-100 text-sm">Kalkulator zakat lengkap untuk berbagai jenis harta</p>
-        </Button>
-
-        <Button
-          onClick={() => scrollToSection('infaq')}
-          className="bg-gradient-to-br from-gold-500 to-gold-600 text-white rounded-xl p-6 h-auto text-left hover:from-gold-600 hover:to-gold-700 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-between mb-4 w-full">
-            <h3 className="text-lg font-semibold">Catat Infaq</h3>
-            <Heart className="h-6 w-6 opacity-80" />
-          </div>
-          <p className="text-gold-100 text-sm">Rekam infaq dan shadaqoh dengan mudah</p>
-        </Button>
-
-        <Button
-          onClick={() => scrollToSection('laporan')}
-          className="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-xl p-6 h-auto text-left hover:from-blue-700 hover:to-blue-800 transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
-        >
-          <div className="flex items-center justify-between mb-4 w-full">
-            <h3 className="text-lg font-semibold">Lihat Laporan</h3>
-            <BarChart3 className="h-6 w-6 opacity-80" />
-          </div>
-          <p className="text-blue-100 text-sm">Analisis dan laporan keuangan spiritual</p>
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <DashboardOverview />
-        <ZakatCalculator />
-        <InfaqForm />
-        <PaymentNotifications />
-        <Reports />
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-islamic-600 via-islamic-700 to-islamic-800 text-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Sistem Informasi Pengelolaan Zakat
+          </h1>
+          <p className="text-xl md:text-2xl mb-8 opacity-90">
+            Kelola zakat, infaq, dan shadaqoh dengan mudah dan sesuai syariat
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/kalkulator">
+              <Button size="lg" className="bg-white text-islamic-600 hover:bg-gray-100">
+                <Calculator className="mr-2 h-5 w-5" />
+                Hitung Zakat
+              </Button>
+            </Link>
+            <Link href="/infaq">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-islamic-600">
+                <Heart className="mr-2 h-5 w-5" />
+                Infaq & Shadaqoh
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Stats Overview */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Ringkasan Aktivitas</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statsLoading ? (
+              [...Array(4)].map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6 text-center">
+                    <div className="h-8 w-8 bg-gray-200 rounded mx-auto mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-6 bg-gray-200 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <>
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <Coins className="mx-auto mb-2 h-8 w-8 text-islamic-600" />
+                    <p className="text-sm text-gray-600">Total Zakat</p>
+                    <p className="text-xl font-bold text-islamic-700">
+                      {stats?.totalZakat ? formatCurrency(stats.totalZakat) : formatCurrency(0)}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <HandHeart className="mx-auto mb-2 h-8 w-8 text-red-600" />
+                    <p className="text-sm text-gray-600">Total Infaq</p>
+                    <p className="text-xl font-bold text-red-700">
+                      {stats?.totalInfaq ? formatCurrency(stats.totalInfaq) : formatCurrency(0)}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <Calendar className="mx-auto mb-2 h-8 w-8 text-yellow-600" />
+                    <p className="text-sm text-gray-600">Pembayaran Tertunda</p>
+                    <p className="text-xl font-bold text-yellow-700">
+                      {upcomingPayments?.length || 0} item
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="text-center">
+                  <CardContent className="p-6">
+                    <TrendingUp className="mx-auto mb-2 h-8 w-8 text-green-600" />
+                    <p className="text-sm text-gray-600">Bulan Ini</p>
+                    <p className="text-xl font-bold text-green-700">
+                      {stats?.thisMonth ? formatCurrency(stats.thisMonth) : formatCurrency(0)}
+                    </p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* Upcoming Payments Alert */}
+        {upcomingPayments && upcomingPayments.length > 0 && (
+          <section className="mb-12">
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2 flex items-center">
+                  <Calendar className="mr-2 h-5 w-5" />
+                  Pembayaran yang Akan Jatuh Tempo
+                </h3>
+                <div className="space-y-2">
+                  {upcomingPayments.slice(0, 3).map((payment: any) => (
+                    <div key={payment.id} className="flex items-center justify-between bg-white p-3 rounded-lg">
+                      <div>
+                        <p className="font-medium">{payment.type}</p>
+                        <p className="text-sm text-gray-600">
+                          Jatuh tempo: {new Date(payment.dueDate).toLocaleDateString('id-ID')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-yellow-700">
+                          {formatCurrency(Number(payment.amount))}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {upcomingPayments.length > 3 && (
+                  <p className="text-sm text-yellow-700 mt-3">
+                    Dan {upcomingPayments.length - 3} pembayaran lainnya...
+                  </p>
+                )}
+                <div className="mt-4">
+                  <Link href="/pembayaran">
+                    <Button className="bg-yellow-600 hover:bg-yellow-700 text-white">
+                      Lihat Semua Pembayaran
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* Quick Actions */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Akses Cepat</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {quickActions.map((action, index) => {
+              const IconComponent = action.icon;
+              return (
+                <Link key={index} href={action.href}>
+                  <Card className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${action.bgColor}`}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start space-x-4">
+                        <div className={`p-3 rounded-lg ${action.bgColor.replace('hover:', '').replace('bg-', 'bg-opacity-50 bg-')}`}>
+                          <IconComponent className={`h-6 w-6 ${action.color}`} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1">{action.title}</h3>
+                          <p className="text-sm text-gray-600">{action.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Recent Activity */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Aktivitas Terbaru</h2>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center py-12">
+                <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-4">Belum ada aktivitas terbaru</p>
+                <p className="text-sm text-gray-400">
+                  Mulai dengan menghitung zakat atau mencatat infaq Anda
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       </main>
 
       <Footer />

@@ -1,0 +1,94 @@
+📉 Kekurangan Sistem Informasi Pengelolaan Zakat (Saat Ini)
+1. Menu Masih Terbatas
+Hanya mencakup: Dashboard, Kalkulator, Infaq & Shodaqoh, dan Laporan.
+
+❗ Belum mencakup fitur penting lain seperti: pendaftaran muzakki, manajemen mustahik, penyaluran zakat, notifikasi, dan sistem pembayaran digital.
+
+🔧 Saran Perbaikan:
+
+Tambahkan menu seperti:
+
+“Pembayaran Zakat”
+
+“Manajemen Muzakki dan Mustahik”
+
+“Status Penyaluran”
+
+“Riwayat Donasi”
+
+“Notifikasi Pengingat Zakat”
+
+“Informasi Edukasi Zakat” (berbasis artikel)
+
+2. Login Hanya Saat Bayar Zakat
+Login hanya dibuka saat pembayaran, namun:
+
+❗ Fitur lain seperti riwayat zakat, status penyaluran, laporan pribadi akan sulit diakses ulang jika tidak ada sistem login yang stabil.
+
+❗ Pengguna tidak bisa melihat histori atau bukti zakat sebelumnya.
+
+🔧 Saran Perbaikan:
+
+Tetap gunakan sistem login biasa, tapi:
+
+Fitur kalkulator, edukasi zakat, dan informasi umum tetap bisa diakses tanpa login.
+
+Login dibutuhkan untuk:
+
+Riwayat transaksi,
+
+Notifikasi,
+
+Pembayaran & bukti,
+
+Data pengguna.
+
+3. Belum Ada Hak Akses Admin / Petugas
+Sistem belum membedakan pengguna umum dan pengelola zakat.
+
+❗ Petugas tidak bisa memantau donasi, laporan distribusi, atau mengelola data mustahik.
+
+🔧 Saran Perbaikan:
+
+Tambahkan fitur “Admin Panel” dengan hak akses berbeda:
+
+Admin bisa:
+
+Melihat semua transaksi,
+
+Menambah/mengelola mustahik,
+
+Mengatur laporan dan distribusi.
+
+4. Belum Ada Fitur Pelaporan Visual & Otomatis
+Laporan hanya disebut secara umum, kemungkinan masih manual atau tidak interaktif.
+
+🔧 Saran Perbaikan:
+
+Tambahkan:
+
+Grafik tren pembayaran zakat, infaq, shodaqoh.
+
+Export laporan (PDF/Excel).
+
+Statistik penerimaan dan penyaluran.
+
+5. Tidak Ada Notifikasi atau Pengingat Zakat
+❗ Pengguna tidak diberi pengingat waktu wajib zakat (misalnya tahunan atau bulanan).
+
+🔧 Saran Perbaikan:
+
+Tambahkan sistem notifikasi:
+
+Via email/WhatsApp (jika memungkinkan),
+
+Atau notifikasi internal di dashboard.
+
+6. Tidak Ada Tracking Status Zakat
+❗ Muzakki tidak bisa tahu apakah zakatnya sudah disalurkan, kapan, dan kepada siapa.
+
+🔧 Saran Perbaikan:
+
+Tambahkan fitur “Status Penyaluran”:
+
+Seperti tracking paket: “Zakat Anda telah disalurkan ke Mustahik A, tanggal...”
