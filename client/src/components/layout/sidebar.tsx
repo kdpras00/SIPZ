@@ -19,12 +19,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home, requiresAuth: true },
+  { name: "Kalkulator Zakat", href: "/kalkulator", icon: Calculator, requiresAuth: false },
   { name: "Infaq & Shadaqah", href: "/infaq", icon: Heart, requiresAuth: true },
   { name: "Pembayaran Zakat", href: "/pembayaran", icon: CreditCard, requiresAuth: true },
+  { name: "Status Penyaluran", href: "/status", icon: LineChart, requiresAuth: true },
   { name: "Notifikasi", href: "/notifikasi", icon: Bell, requiresAuth: true },
   { name: "Laporan Donasi", href: "/laporan", icon: BarChart3, requiresAuth: true },
   { name: "Informasi Zakat", href: "/edukasi", icon: BookOpen, requiresAuth: false },
-  { name: "Status Penyaluran", href: "/status", icon: LineChart, requiresAuth: true },
 ];
 
 export function Sidebar() {

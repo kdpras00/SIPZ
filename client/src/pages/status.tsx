@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { 
   Truck, 
   CheckCircle, 
@@ -15,61 +16,14 @@ import {
   Search,
   Package,
   Heart,
-  Banknote
+  Banknote,
+  Eye,
+  Download,
+  Share,
+  MessageCircle
 } from "lucide-react";
 import { formatCurrency } from "@/lib/zakat-calculator";
 
-// Mock data untuk status penyaluran
-const distributionData = [
-  {
-    id: "ZKT-2024-001",
-    type: "Zakat Penghasilan",
-    amount: 2500000,
-    date: "2024-01-15",
-    status: "distributed",
-    recipient: {
-      name: "Ahmad Suharto",
-      category: "Fakir",
-      location: "Jakarta Timur",
-      family_members: 4
-    },
-    distribution_date: "2024-01-20",
-    proof_image: "/api/placeholder/400/300",
-    notes: "Telah diserahkan langsung kepada yang bersangkutan untuk kebutuhan sehari-hari keluarga"
-  },
-  {
-    id: "ZKT-2024-002", 
-    type: "Zakat Fitrah",
-    amount: 350000,
-    date: "2024-04-08",
-    status: "in_process",
-    recipient: {
-      name: "Fatimah Zahra",
-      category: "Miskin",
-      location: "Jakarta Selatan", 
-      family_members: 2
-    },
-    distribution_date: null,
-    proof_image: null,
-    notes: "Sedang dalam proses verifikasi data mustahik"
-  },
-  {
-    id: "INF-2024-003",
-    type: "Infaq",
-    amount: 1000000,
-    date: "2024-03-10", 
-    status: "distributed",
-    recipient: {
-      name: "Masjid Al-Ikhlas",
-      category: "Fi Sabilillah",
-      location: "Jakarta Pusat",
-      family_members: null
-    },
-    distribution_date: "2024-03-12",
-    proof_image: "/api/placeholder/400/300",
-    notes: "Bantuan untuk renovasi masjid dan kegiatan dakwah"
-  }
-];
 
 const getStatusInfo = (status: string) => {
   switch (status) {
@@ -77,25 +31,36 @@ const getStatusInfo = (status: string) => {
       return {
         color: 'bg-green-100 text-green-800',
         icon: CheckCircle,
-        text: 'Telah Disalurkan'
+        text: 'Telah Disalurkan',
+        progress: 100
+      };
+    case 'in_transit':
+      return {
+        color: 'bg-blue-100 text-blue-800',
+        icon: Truck,
+        text: 'Dalam Perjalanan',
+        progress: 75
       };
     case 'in_process':
       return {
         color: 'bg-yellow-100 text-yellow-800', 
         icon: Clock,
-        text: 'Sedang Diproses'
+        text: 'Sedang Diproses',
+        progress: 50
       };
     case 'pending':
       return {
         color: 'bg-gray-100 text-gray-800',
         icon: Package,
-        text: 'Menunggu'
+        text: 'Menunggu',
+        progress: 25
       };
     default:
       return {
         color: 'bg-gray-100 text-gray-800',
         icon: Package, 
-        text: 'Unknown'
+        text: 'Unknown',
+        progress: 0
       };
   }
 };
@@ -104,20 +69,12 @@ export default function Status() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("semua");
 
-  // Mock query - dalam implementasi nyata akan mengambil dari API
   const { data: myDistributions, isLoading } = useQuery({
     queryKey: ["/api/distributions/my"],
-    queryFn: () => Promise.resolve(distributionData),
   });
 
   const { data: stats } = useQuery({
     queryKey: ["/api/distributions/stats"],
-    queryFn: () => Promise.resolve({
-      total_distributed: 15750000,
-      total_recipients: 28,
-      this_month: 5,
-      pending_process: 3
-    }),
   });
 
   const filteredDistributions = myDistributions?.filter((item: any) => {
@@ -136,63 +93,69 @@ export default function Status() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Status Penyaluran</h1>
-          <p className="text-gray-600">Pantau status penyaluran zakat, infaq, dan shadaqoh Anda</p>
-        </div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Status Penyaluran</h1>
+        <p className="text-gray-600 dark:text-gray-300">Pantau status penyaluran zakat, infaq, dan shadaqoh Anda secara real-time</p>
+      </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Banknote className="mx-auto mb-2 h-8 w-8 text-islamic-600" />
-              <p className="text-sm text-gray-600">Total Disalurkan</p>
-              <p className="text-xl font-bold text-islamic-700">
-                {stats ? formatCurrency(stats.total_distributed) : formatCurrency(0)}
-              </p>
-            </CardContent>
-          </Card>
+      {/* Enhanced Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-islamic-50 to-islamic-100 border-islamic-200">
+          <CardContent className="p-6 text-center">
+            <Banknote className="mx-auto mb-2 h-8 w-8 text-islamic-600" />
+            <p className="text-sm text-gray-600">Total Disalurkan</p>
+            <p className="text-xl font-bold text-islamic-700">
+              {stats ? formatCurrency(stats.total_distributed) : formatCurrency(0)}
+            </p>
+            <div className="mt-2">
+              <Progress value={85} className="h-2" />
+              <p className="text-xs text-gray-500 mt-1">85% dari target tahunan</p>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Users className="mx-auto mb-2 h-8 w-8 text-blue-600" />
-              <p className="text-sm text-gray-600">Penerima Bantuan</p>
-              <p className="text-xl font-bold text-blue-700">
-                {stats ? `${stats.total_recipients} orang` : "0 orang"}
-              </p>
-            </CardContent>
-          </Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-6 text-center">
+            <Users className="mx-auto mb-2 h-8 w-8 text-blue-600" />
+            <p className="text-sm text-gray-600">Penerima Bantuan</p>
+            <p className="text-xl font-bold text-blue-700">
+              {stats ? `${stats.total_recipients} orang` : "0 orang"}
+            </p>
+            <p className="text-xs text-blue-600 mt-1">+5 keluarga baru</p>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <CheckCircle className="mx-auto mb-2 h-8 w-8 text-green-600" />
-              <p className="text-sm text-gray-600">Bulan Ini</p>
-              <p className="text-xl font-bold text-green-700">
-                {stats ? `${stats.this_month} kali` : "0 kali"}
-              </p>
-            </CardContent>
-          </Card>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-6 text-center">
+            <CheckCircle className="mx-auto mb-2 h-8 w-8 text-green-600" />
+            <p className="text-sm text-gray-600">Bulan Ini</p>
+            <p className="text-xl font-bold text-green-700">
+              {stats ? `${stats.this_month} kali` : "0 kali"}
+            </p>
+            <p className="text-xs text-green-600 mt-1">100% tersalurkan</p>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Clock className="mx-auto mb-2 h-8 w-8 text-yellow-600" />
-              <p className="text-sm text-gray-600">Sedang Diproses</p>
-              <p className="text-xl font-bold text-yellow-700">
-                {stats ? `${stats.pending_process} item` : "0 item"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <CardContent className="p-6 text-center">
+            <Clock className="mx-auto mb-2 h-8 w-8 text-yellow-600" />
+            <p className="text-sm text-gray-600">Sedang Diproses</p>
+            <p className="text-xl font-bold text-yellow-700">
+              {stats ? `${stats.pending_process} item` : "0 item"}
+            </p>
+            <p className="text-xs text-yellow-600 mt-1">Estimasi 2-3 hari</p>
+          </CardContent>
+        </Card>
+      </div>
 
-        <Tabs defaultValue="tracking" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="tracking">Tracking Penyaluran</TabsTrigger>
-            <TabsTrigger value="recipients">Data Penerima</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="tracking" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="tracking">Tracking Penyaluran</TabsTrigger>
+          <TabsTrigger value="recipients">Data Penerima</TabsTrigger>
+          <TabsTrigger value="impact">Dampak Sosial</TabsTrigger>
+        </TabsList>
 
           <TabsContent value="tracking" className="space-y-4">
             {/* Filter dan Search */}
@@ -252,7 +215,7 @@ export default function Status() {
                   const StatusIcon = statusInfo.icon;
                   
                   return (
-                    <Card key={item.id} className="hover:shadow-md transition-shadow">
+                    <div key={item.id} className="border rounded-lg p-6 hover:shadow-lg transition-all hover:scale-[1.02]">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
@@ -355,34 +318,113 @@ export default function Status() {
                               {item.recipient.category}
                             </Badge>
                           </div>
+                      {/* Progress Bar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">Progress Penyaluran</span>
+                          <span className="text-sm font-medium">{statusInfo.progress}%</span>
+                        </div>
+                        <Progress value={statusInfo.progress} className="h-2" />
+                      </div>
+
                           <Heart className="h-5 w-5 text-red-500" />
                         </div>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            <span>{item.recipient.location}</span>
+                        <h4 className="font-medium text-gray-900 mb-3">Timeline Penyaluran</h4>
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                              <CheckCircle className="w-2 h-2 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Donasi Diterima</p>
+                              <p className="text-xs text-gray-500">{formatDate(item.date)}</p>
+                            </div>
                           </div>
-                          {item.recipient.family_members && (
+                          {item.recipient.familyMembers && (
                             <div className="flex items-center">
-                              <Users className="w-3 h-3 mr-1" />
-                              <span>{item.recipient.family_members} anggota keluarga</span>
+                              <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                <Clock className="w-2 h-2 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium">Mulai Diproses</p>
+                                <p className="text-xs text-gray-500">{formatDate(item.processDate)}</p>
+                              <span>{item.recipient.familyMembers} anggota keluarga</span>
                             </div>
                           )}
                           <p className="font-medium text-islamic-600 mt-2">
                             {formatCurrency(item.amount)}
-                          </p>
+                              <div className="w-4 h-4 bg-purple-500 rounded-full flex items-center justify-center">
+                                <Truck className="w-2 h-2 text-white" />
+                        <h4 className="font-medium text-gray-900 mb-2">Aksi</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {item.proofImage && (
+                            <Button size="sm" variant="outline">
+                              <Eye className="w-3 h-3 mr-1" />
+                              Lihat Bukti
+                            </Button>
+                          )}
+                          <Button size="sm" variant="outline">
+                            <Download className="w-3 h-3 mr-1" />
+                            Unduh Laporan
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <Share className="w-3 h-3 mr-1" />
+                            Bagikan
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <MessageCircle className="w-3 h-3 mr-1" />
+                            Feedback
+                          </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        {item.notes && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                            <p className="text-sm text-gray-600">
+                              <strong>Catatan:</strong> {item.notes}
+                            </p>
+                          </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="impact" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Dampak Sosial Donasi Anda</CardTitle>
+                <p className="text-sm text-gray-600">Lihat bagaimana kontribusi Anda membawa perubahan</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-6 bg-green-50 rounded-lg">
+                    <div className="text-3xl font-bold text-green-700 mb-2">28</div>
+                    <p className="text-sm text-gray-600">Keluarga Terbantu</p>
+                    <p className="text-xs text-green-600 mt-1">Kebutuhan sehari-hari terpenuhi</p>
+                  </div>
+                  <div className="text-center p-6 bg-blue-50 rounded-lg">
+                    <div className="text-3xl font-bold text-blue-700 mb-2">15</div>
+                    <p className="text-sm text-gray-600">Anak Bersekolah</p>
+                    <p className="text-xs text-blue-600 mt-1">Mendapat beasiswa pendidikan</p>
+                  </div>
+                  <div className="text-center p-6 bg-purple-50 rounded-lg">
+                    <div className="text-3xl font-bold text-purple-700 mb-2">5</div>
+                    <p className="text-sm text-gray-600">Usaha Mikro</p>
+                    <p className="text-xs text-purple-600 mt-1">Modal usaha untuk kemandirian</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-islamic-50 rounded-lg">
+                  <h4 className="font-medium text-islamic-800 mb-2">Testimoni Penerima</h4>
+                  <blockquote className="text-sm text-gray-700 italic">
+                    "Alhamdulillah, bantuan zakat dari SIPZ sangat membantu keluarga kami. 
+                    Anak-anak bisa melanjutkan sekolah dan kebutuhan sehari-hari tercukupi. 
+                    Jazakallahu khairan untuk para donatur yang telah membantu."
+                  </blockquote>
+                  <p className="text-xs text-gray-500 mt-2">- Ibu Siti, Penerima Bantuan Jakarta Timur</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
-
-      <Footer />
     </div>
   );
 }

@@ -157,21 +157,27 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => setLocation('/program/kesehatan')}>
+                  <Shield className="mr-2 h-4 w-4" />
                   Kesehatan
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/program/ekonomi')}>
+                  <Wallet className="mr-2 h-4 w-4" />
                   Ekonomi
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/program/pendidikan')}>
+                  <BookOpen className="mr-2 h-4 w-4" />
                   Pendidikan
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/program/sosial')}>
+                  <Heart className="mr-2 h-4 w-4" />
                   Sosial
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/program/dakwah')}>
+                  <BookOpen className="mr-2 h-4 w-4" />
                   Dakwah & Budaya
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/program/wakaf')}>
+                  <Building className="mr-2 h-4 w-4" />
                   Wakaf
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -185,15 +191,19 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem onClick={() => setLocation('/jemput-zakat')}>
+                  <Hand className="mr-2 h-4 w-4" />
                   Jemput Zakat
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/kalkulator')}>
+                  <Calculator className="mr-2 h-4 w-4" />
                   Kalkulator Zakat
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/konfirmasi')}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
                   Konfirmasi Donasi
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setLocation('/konsultasi')}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
                   Konsultasi Ziswaf
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -238,8 +248,13 @@ export function Header() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setLocation("/notifikasi")}
+                  className="relative"
                 >
                   <Bell className="h-5 w-5" />
+                  {/* Notification badge */}
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    3
+                  </span>
                   <span className="sr-only">Notifications</span>
                 </Button>
                 <DropdownMenu>

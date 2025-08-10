@@ -38,106 +38,28 @@ const mustahikSchema = z.object({
   notes: z.string().optional(),
 });
 
-// Mock data untuk admin
-const adminStats = {
-  total_collections: 125000000,
-  total_distributions: 118000000,
-  pending_distributions: 7000000,
-  total_muzakki: 145,
-  total_mustahik: 89,
-  this_month_collections: 15000000,
-  this_month_distributions: 14200000,
-  active_programs: 8
-};
-
-const recentTransactions = [
-  {
-    id: "TRX-2024-001",
-    muzakki_name: "Ahmad Rahman",
-    type: "Zakat Penghasilan",
-    amount: 2500000,
-    date: "2024-01-15",
-    status: "verified"
-  },
-  {
-    id: "TRX-2024-002", 
-    muzakki_name: "Siti Aminah",
-    type: "Zakat Fitrah",
-    amount: 350000,
-    date: "2024-01-14",
-    status: "pending"
-  },
-  {
-    id: "TRX-2024-003",
-    muzakki_name: "Budi Santoso", 
-    type: "Infaq",
-    amount: 1000000,
-    date: "2024-01-13",
-    status: "verified"
-  }
-];
-
-const mustahikData = [
-  {
-    id: 1,
-    name: "Ahmad Suharto",
-    category: "Fakir",
-    phone: "081234567890",
-    address: "Jl. Kebon Jeruk No. 15, Jakarta Timur",
-    family_members: 4,
-    monthly_income: 0,
-    verified: true,
-    last_received: "2024-01-15"
-  },
-  {
-    id: 2,
-    name: "Fatimah Zahra",
-    category: "Miskin", 
-    phone: "081987654321",
-    address: "Jl. Mangga Dua No. 8, Jakarta Selatan",
-    family_members: 2,
-    monthly_income: 800000,
-    verified: true,
-    last_received: "2024-01-10"
-  },
-  {
-    id: 3,
-    name: "Yayasan Yatim Piatu Al-Ikhlas",
-    category: "Fi Sabilillah",
-    phone: "021-12345678",
-    address: "Jl. Sudirman No. 100, Jakarta Pusat", 
-    family_members: null,
-    monthly_income: null,
-    verified: true,
-    last_received: "2024-01-08"
-  }
-];
 
 export default function AdminPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedMustahik, setSelectedMustahik] = useState<any>(null);
 
-  // Mock queries - in real app would fetch from API
+  // Queries for admin data
   const { data: stats } = useQuery({
     queryKey: ["/api/admin/stats"],
-    queryFn: () => Promise.resolve(adminStats),
   });
 
   const { data: transactions } = useQuery({
     queryKey: ["/api/admin/transactions"],
-    queryFn: () => Promise.resolve(recentTransactions),
   });
 
   const { data: mustahik, isLoading } = useQuery({
     queryKey: ["/api/admin/mustahik"],
-    queryFn: () => Promise.resolve(mustahikData),
   });
 
   const addMustahikMutation = useMutation({
     mutationFn: async (data: any) => {
-      // Mock API call
-      return Promise.resolve({ ...data, id: Date.now() });
+      return apiRequest("POST", "/api/admin/mustahik", data);
     },
     onSuccess: () => {
       toast({
@@ -195,109 +117,129 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Panel Admin</h1>
-              <p className="text-gray-600">Kelola sistem zakat dan data mustahik</p>
+    <div className="space-y-8">
+      {/* Admin Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Panel Admin</h1>
+          <p className="text-gray-600 dark:text-gray-300">Kelola sistem zakat dan data mustahik</p>
+        </div>
+        <Badge variant="secondary" className="bg-red-100 text-red-800">
+          <Shield className="w-4 h-4 mr-1" />
+          Admin Access
+        </Badge>
+      </div>
+
+      {/* Enhanced Admin Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-6 text-center">
+            <DollarSign className="mx-auto mb-2 h-8 w-8 text-green-600" />
+            <p className="text-sm text-gray-600">Total Terkumpul</p>
+            <p className="text-xl font-bold text-green-700">
+              {formatCurrency(stats?.total_collections || 0)}
+            </p>
+            <div className="flex items-center justify-center mt-2">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <span className="text-xs text-green-600">+12% bulan ini</span>
             </div>
-            <Badge variant="secondary" className="bg-red-100 text-red-800">
-              <Shield className="w-4 h-4 mr-1" />
-              Admin Access
-            </Badge>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Admin Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <DollarSign className="mx-auto mb-2 h-8 w-8 text-green-600" />
-              <p className="text-sm text-gray-600">Total Terkumpul</p>
-              <p className="text-xl font-bold text-green-700">
-                {formatCurrency(stats?.total_collections || 0)}
-              </p>
-            </CardContent>
-          </Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-6 text-center">
+            <TrendingUp className="mx-auto mb-2 h-8 w-8 text-blue-600" />
+            <p className="text-sm text-gray-600">Total Disalurkan</p>
+            <p className="text-xl font-bold text-blue-700">
+              {formatCurrency(stats?.total_distributions || 0)}
+            </p>
+            <div className="flex items-center justify-center mt-2">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <span className="text-xs text-green-600">+8% bulan ini</span>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <TrendingUp className="mx-auto mb-2 h-8 w-8 text-blue-600" />
-              <p className="text-sm text-gray-600">Total Disalurkan</p>
-              <p className="text-xl font-bold text-blue-700">
-                {formatCurrency(stats?.total_distributions || 0)}
-              </p>
-            </CardContent>
-          </Card>
+        <Card className="bg-gradient-to-br from-islamic-50 to-islamic-100 border-islamic-200">
+          <CardContent className="p-6 text-center">
+            <Users className="mx-auto mb-2 h-8 w-8 text-islamic-600" />
+            <p className="text-sm text-gray-600">Total Muzakki</p>
+            <p className="text-xl font-bold text-islamic-700">
+              {stats?.total_muzakki || 0} orang
+            </p>
+            <div className="flex items-center justify-center mt-2">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <span className="text-xs text-green-600">+15 baru</span>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Users className="mx-auto mb-2 h-8 w-8 text-islamic-600" />
-              <p className="text-sm text-gray-600">Total Muzakki</p>
-              <p className="text-xl font-bold text-islamic-700">
-                {stats?.total_muzakki || 0} orang
-              </p>
-            </CardContent>
-          </Card>
+        <Card className="bg-gradient-to-br from-gold-50 to-gold-100 border-gold-200">
+          <CardContent className="p-6 text-center">
+            <Users className="mx-auto mb-2 h-8 w-8 text-gold-600" />
+            <p className="text-sm text-gray-600">Total Mustahik</p>
+            <p className="text-xl font-bold text-gold-700">
+              {stats?.total_mustahik || 0} orang
+            </p>
+            <div className="flex items-center justify-center mt-2">
+              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              <span className="text-xs text-green-600">+5 terverifikasi</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card>
-            <CardContent className="p-6 text-center">
-              <Users className="mx-auto mb-2 h-8 w-8 text-gold-600" />
-              <p className="text-sm text-gray-600">Total Mustahik</p>
-              <p className="text-xl font-bold text-gold-700">
-                {stats?.total_mustahik || 0} orang
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="mustahik">Kelola Mustahik</TabsTrigger>
-            <TabsTrigger value="transactions">Transaksi</TabsTrigger>
-            <TabsTrigger value="reports">Laporan</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="mustahik">Kelola Mustahik</TabsTrigger>
+          <TabsTrigger value="transactions">Transaksi</TabsTrigger>
+          <TabsTrigger value="analytics">Analitik</TabsTrigger>
+          <TabsTrigger value="reports">Laporan</TabsTrigger>
+        </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Transactions */}
-              <Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Real-time Stats */}
+              <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Transaksi Terbaru</CardTitle>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="mr-2 text-islamic-600" />
+                    Statistik Real-time
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {transactions?.map((transaction: any) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium text-gray-900">{transaction.muzakki_name}</p>
-                          <p className="text-sm text-gray-600">{transaction.type}</p>
-                          <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-islamic-600">
-                            {formatCurrency(transaction.amount)}
-                          </p>
-                          <Badge 
-                            variant={transaction.status === 'verified' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {transaction.status === 'verified' ? 'Terverifikasi' : 'Pending'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-green-50 rounded-lg">
+                      <p className="text-2xl font-bold text-green-700">
+                        {formatCurrency(stats?.today_collections || 0)}
+                      </p>
+                      <p className="text-sm text-gray-600">Hari Ini</p>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-700">
+                        {stats?.pending_verifications || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Pending Verifikasi</p>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                      <p className="text-2xl font-bold text-yellow-700">
+                        {stats?.active_distributions || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Sedang Disalurkan</p>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 rounded-lg">
+                      <p className="text-2xl font-bold text-purple-700">
+                        {stats?.new_registrations || 0}
+                      </p>
+                      <p className="text-sm text-gray-600">Pendaftar Baru</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Quick Actions */}
-              <Card>
+              <Card className="lg:col-span-1">
                 <CardHeader>
                   <CardTitle>Aksi Cepat</CardTitle>
                 </CardHeader>
@@ -306,7 +248,11 @@ export default function AdminPanel() {
                     <UserPlus className="w-4 h-4 mr-2" />
                     Tambah Mustahik Baru
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setLocation('/admin/verifikasi')}>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Verifikasi Transaksi ({stats?.pending_verifications || 0})
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setLocation('/admin/analytics')}>
                     <BarChart3 className="w-4 h-4 mr-2" />
                     Lihat Statistik Lengkap
                   </Button>
@@ -314,13 +260,60 @@ export default function AdminPanel() {
                     <Download className="w-4 h-4 mr-2" />
                     Export Laporan Bulanan
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setLocation('/admin/settings')}>
                     <Settings className="w-4 h-4 mr-2" />
                     Pengaturan Sistem
                   </Button>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Recent Transactions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Transaksi Terbaru</CardTitle>
+                <p className="text-sm text-gray-600">Transaksi yang memerlukan perhatian</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {transactions?.slice(0, 5).map((transaction: any) => (
+                    <div key={transaction.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          transaction.status === 'verified' ? 'bg-green-500' : 
+                          transaction.status === 'pending' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}></div>
+                        <div>
+                          <p className="font-medium text-gray-900">{transaction.muzakki_name}</p>
+                          <p className="text-sm text-gray-600">{transaction.type}</p>
+                          <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-islamic-600">
+                          {formatCurrency(transaction.amount)}
+                        </p>
+                        <Badge 
+                          variant={transaction.status === 'verified' ? 'default' : 'secondary'}
+                          className={`text-xs ${
+                            transaction.status === 'verified' ? 'bg-green-100 text-green-800' :
+                            transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {transaction.status === 'verified' ? 'Terverifikasi' : 
+                           transaction.status === 'pending' ? 'Pending' : 'Ditolak'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button variant="ghost" className="w-full mt-4 text-islamic-600">
+                  Lihat Semua Transaksi
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="mustahik" className="space-y-6">
@@ -616,6 +609,10 @@ export default function AdminPanel() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="analytics" className="space-y-4">
+            <VisualReports />
+          </TabsContent>
+
           <TabsContent value="reports" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -660,6 +657,10 @@ export default function AdminPanel() {
                       <span className="text-sm text-gray-600">Program Aktif</span>
                       <span className="font-semibold">{stats?.active_programs || 0} program</span>
                     </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Efisiensi Distribusi</span>
+                      <span className="font-semibold text-green-600">94.2%</span>
+                    </div>
                   </div>
                   <Button onClick={exportReport} variant="outline" className="w-full">
                     <Download className="w-4 h-4 mr-2" />
@@ -670,9 +671,6 @@ export default function AdminPanel() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
-
-      <Footer />
     </div>
   );
 }

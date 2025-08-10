@@ -154,4 +154,123 @@ export async function registerRoutes(router: Router) {
       res.status(500).json({ message: "Gagal mendapatkan data user" });
     }
   });
+
+  // Dashboard stats endpoint
+  router.get('/dashboard/stats', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Tidak terautentikasi' });
+      }
+
+      // Mock data - replace with actual database queries
+      const stats = {
+        totalZakat: 15750000,
+        totalInfaq: 8500000,
+        upcomingPayments: 3,
+        totalRecipients: 28,
+        recentActivities: [
+          {
+            title: "Zakat Penghasilan Dibayar",
+            time: "2 hari lalu",
+            type: "payment"
+          },
+          {
+            title: "Pengingat Zakat Dijadwalkan", 
+            time: "1 minggu lalu",
+            type: "reminder"
+          }
+        ]
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Dashboard stats error:", error);
+      res.status(500).json({ message: "Gagal mengambil statistik dashboard" });
+    }
+  });
+
+  // Monthly progress endpoint
+  router.get('/dashboard/monthly-progress', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Tidak terautentikasi' });
+      }
+
+      // Mock data
+      const progress = {
+        collected: 7500000,
+        target: 10000000,
+        percentage: 75
+      };
+
+      res.json(progress);
+    } catch (error) {
+      console.error("Monthly progress error:", error);
+      res.status(500).json({ message: "Gagal mengambil progress bulanan" });
+    }
+  });
+
+  // Distribution tracking endpoint
+  router.get('/distributions/tracking', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Tidak terautentikasi' });
+      }
+
+      // Mock data
+      const distributions = [
+        {
+          id: "ZKT-2024-001",
+          type: "Zakat Penghasilan",
+          amount: 2500000,
+          date: "2024-01-15",
+          status: "distributed",
+          recipient: {
+            name: "Ahmad Suharto",
+            category: "Fakir",
+            location: "Jakarta Timur",
+            familyMembers: 4
+          },
+          distributionDate: "2024-01-20",
+          proofImage: "/api/placeholder/400/300",
+          notes: "Telah diserahkan langsung kepada yang bersangkutan untuk kebutuhan sehari-hari keluarga"
+        }
+      ];
+
+      res.json(distributions);
+    } catch (error) {
+      console.error("Distribution tracking error:", error);
+      res.status(500).json({ message: "Gagal mengambil data tracking" });
+    }
+  });
+
+  // Admin stats endpoint
+  router.get('/admin/stats', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Tidak terautentikasi' });
+      }
+
+      // Mock admin data
+      const adminStats = {
+        total_collections: 125000000,
+        total_distributions: 118000000,
+        pending_distributions: 7000000,
+        total_muzakki: 145,
+        total_mustahik: 89,
+        this_month_collections: 15000000,
+        this_month_distributions: 14200000,
+        active_programs: 8,
+        today_collections: 2500000,
+        pending_verifications: 12,
+        active_distributions: 8,
+        new_registrations: 5
+      };
+
+      res.json(adminStats);
+    } catch (error) {
+      console.error("Admin stats error:", error);
+      res.status(500).json({ message: "Gagal mengambil statistik admin" });
+    }
+  });
 }
