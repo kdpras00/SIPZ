@@ -40,8 +40,21 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
-  app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  // Gunakan middleware Vite hanya untuk non-API requests
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    vite.middlewares(req, res, next);
+  });
+
+  // Catch-all handler untuk client-side routing
+  app.get("*", async (req, res, next) => {
+    // Skip untuk API requests
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+
     const url = req.originalUrl;
 
     try {

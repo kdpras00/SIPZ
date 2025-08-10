@@ -1,233 +1,389 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Calculator, 
-  Heart, 
-  Bell, 
-  BarChart3, 
-  Shield, 
+import {
+  Calculator,
+  Heart,
+  Bell,
+  BarChart3,
+  Shield,
   Users,
   Building2,
-  Hand
+  Hand,
+  BookOpen,
+  ArrowRight,
+  Phone,
+  CheckCircle,
+  Wallet,
+  MessageSquare,
+  Landmark,
+  BookOpen as Education,
+  Heart as HeartHandshake,
+  BookOpen as PrayingHands,
+  Building as Mosque,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+  Linkedin,
+  ChevronRight
 } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+
+// Custom TikTok icon since it's not in Lucide
+const TikTok = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+  </svg>
+);
 
 export function Landing() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950">
-      {/* Header */}
-      <header className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Building2 className="h-8 w-8 text-emerald-600" />
-            <h1 className="text-2xl font-bold text-emerald-800 dark:text-emerald-200">SIPZ</h1>
-          </div>
-          <Button 
-            onClick={() => window.location.href = '/api/login'}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            Masuk
-          </Button>
-        </div>
-      </header>
+  const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
+  const [activeTab, setActiveTab] = useState("semua");
 
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="mb-6">
-            <Building2 className="h-20 w-20 text-emerald-600 mx-auto mb-4" />
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Sistem Informasi Pengelolaan Zakat
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Platform komprehensif untuk menghitung, mengelola, dan melacak kewajiban zakat serta 
-              kontribusi infaq dan shadaqah Anda dengan mudah dan tepat sesuai syariat Islam.
-            </p>
-          </div>
-          <div className="flex gap-4 justify-center">
-            <Button 
-              size="lg"
-              onClick={() => window.location.href = '/api/login'}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
-            >
-              Mulai Sekarang
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              onClick={() => window.location.href = '/calculator'}
-              className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
-            >
-              Coba Kalkulator
-            </Button>
-          </div>
+  // Mock news data
+  const news = [
+    {
+      category: "Khazanah Islam",
+      title: "Inilah Keutamaan Menyantuni Anak Yatim di Bulan Muharram",
+      date: "29 Juli 2024",
+      image: "/images/news1.jpg",
+      excerpt: "Muharram menjadi momen penting dalam Islam. Peristiwa ini membuat bulan Muharam jadi sangat istimewa bagi umat muslim..."
+    },
+    {
+      category: "Kabar",
+      title: "Berbagi Bahagia di Pelosok Negeri, SIPZ Distribusikan 5.000 Hewan Kurban",
+      date: "14 Juni 2024",
+      image: "/images/news2.jpg",
+      excerpt: "Selama beberapa tahun SIPZ terus menjaga amanah para pekurban dalam menyalurkan hewan kurbannya ke pelosok negeri..."
+    },
+    {
+      category: "Khazanah Islam",
+      title: "Jodoh dalam Islam, Benarkah Ketentuan Allah SWT?",
+      date: "8 November 2023",
+      image: "/images/news3.jpg",
+      excerpt: "Banyak ungkapan seperti \"jodoh pasti bertemu\" yang sering kita temui di masyarakat. Memang benar bahwa jodoh dalam Islam..."
+    }
+  ];
+
+  // Mock program data
+  const programs = [
+    {
+      title: "Kesehatan",
+      icon: Shield,
+      description: "Program layanan kesehatan untuk melayani kaum dhuafa melalui intervensi preventif, promotif dan kuratif.",
+      link: "/program/kesehatan"
+    },
+    {
+      title: "Ekonomi",
+      icon: Wallet,
+      description: "Pemberdayaan ekonomi untuk mengangkat harkat hidup mustahik, dhuafa dan masyarakat prasejahtera.",
+      link: "/program/ekonomi"
+    },
+    {
+      title: "Pendidikan",
+      icon: Education,
+      description: "Program pendidikan menyentuh siswa hingga tenaga pendidik untuk membentuk SDM berkarakter dan berkompetensi global.",
+      link: "/program/pendidikan"
+    },
+    {
+      title: "Sosial",
+      icon: HeartHandshake,
+      description: "Layanan sosial untuk berbagai masalah masyarakat, dari pemenuhan basic needs hingga tanggap darurat bencana.",
+      link: "/program/sosial"
+    },
+    {
+      title: "Dakwah & Budaya",
+      icon: PrayingHands,
+      description: "Pengembangan aktivitas dakwah dan budaya melalui berbagai program yang menyentuh berbagai lapisan masyarakat.",
+      link: "/program/dakwah"
+    },
+    {
+      title: "Wakaf",
+      icon: Mosque,
+      description: "Salurkan wakaf untuk program-program produktif agar manfaatnya terus tumbuh dan mengalir abadi.",
+      link: "/program/wakaf"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-gray-950">
+      {/* Hero Banner with Donation Campaign */}
+      <section className="relative bg-gradient-to-r from-emerald-600 to-emerald-800 py-24 px-4 mt-16">
+        <div className="container mx-auto text-center text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Pilih Donasi Kebaikanmu di Sini
+          </h1>
+          <p className="text-xl max-w-3xl mx-auto mb-10">
+            Berani berbuat baik, karena kebaikan itu akan kembali kepadamu suatu saat nanti
+          </p>
+          <Button
+            size="lg"
+            onClick={() => setLocation('/donasi')}
+            className="bg-white hover:bg-gray-100 text-emerald-600 px-8 py-6 text-lg font-semibold"
+          >
+            Lihat Semua Kampanye Donasi
+          </Button>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 px-4 bg-white/30 dark:bg-gray-900/30">
+      {/* Services Section */}
+      <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-            Fitur Lengkap untuk Pengelolaan Zakat
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">
+            Bagaimana Kami Dapat Membantu Anda?
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-emerald-200 hover:shadow-lg transition-shadow">
+          <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
+            Layanan kami memberikan kemudahan bagi Anda dalam berdonasi
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <Hand className="h-12 w-12 text-emerald-600 mb-4" />
+                <CardTitle className="text-emerald-800 dark:text-emerald-200">
+                  Jemput Zakat
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Tidak perlu kemana-mana, kami akan menjemput donasi Ziswaf Anda. Mudah bukan?
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  variant="link"
+                  className="text-emerald-600 p-0 h-auto flex items-center"
+                  onClick={() => setLocation('/jemput-zakat')}
+                >
+                  Selengkapnya <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
                 <Calculator className="h-12 w-12 text-emerald-600 mb-4" />
                 <CardTitle className="text-emerald-800 dark:text-emerald-200">
                   Kalkulator Zakat
                 </CardTitle>
-                <CardDescription>
-                  Hitung zakat penghasilan, emas, perdagangan, dan pertanian dengan akurat sesuai nisab terkini
+                <CardDescription className="text-base">
+                  Hitung kewajiban zakat Anda. Cukup masukkan angka dan ketahui hasilnya.
                 </CardDescription>
               </CardHeader>
+              <CardContent>
+                <Button
+                  variant="link"
+                  className="text-emerald-600 p-0 h-auto flex items-center"
+                  onClick={() => setLocation('/kalkulator')}
+                >
+                  Selengkapnya <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </CardContent>
             </Card>
 
-            <Card className="border-emerald-200 hover:shadow-lg transition-shadow">
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <Hand className="h-12 w-12 text-emerald-600 mb-4" />
+                <CheckCircle className="h-12 w-12 text-emerald-600 mb-4" />
                 <CardTitle className="text-emerald-800 dark:text-emerald-200">
-                  Infaq & Shadaqah
+                  Konfirmasi Donasi
                 </CardTitle>
-                <CardDescription>
-                  Catat dan kelola seluruh kontribusi infaq, shadaqah, wakaf, dan amal jariyah Anda
+                <CardDescription className="text-base">
+                  Sudah transfer? Yuk konfirmasikan donasi Anda agar tercatat!
                 </CardDescription>
               </CardHeader>
+              <CardContent>
+                <Button
+                  variant="link"
+                  className="text-emerald-600 p-0 h-auto flex items-center"
+                  onClick={() => setLocation('/konfirmasi')}
+                >
+                  Selengkapnya <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </CardContent>
             </Card>
 
-            <Card className="border-emerald-200 hover:shadow-lg transition-shadow">
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <Bell className="h-12 w-12 text-emerald-600 mb-4" />
+                <MessageSquare className="h-12 w-12 text-emerald-600 mb-4" />
                 <CardTitle className="text-emerald-800 dark:text-emerald-200">
-                  Notifikasi Pembayaran
+                  Konsultasi Ziswaf
                 </CardTitle>
-                <CardDescription>
-                  Pengingat otomatis untuk jadwal pembayaran zakat dan kewajiban lainnya
+                <CardDescription className="text-base">
+                  Konsultasi dengan konsultan Zakat kami, sehingga Anda jadi lebih paham.
                 </CardDescription>
               </CardHeader>
+              <CardContent>
+                <Button
+                  variant="link"
+                  className="text-emerald-600 p-0 h-auto flex items-center"
+                  onClick={() => setLocation('/konsultasi')}
+                >
+                  Selengkapnya <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
+              </CardContent>
             </Card>
+          </div>
 
-            <Card className="border-emerald-200 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <BarChart3 className="h-12 w-12 text-emerald-600 mb-4" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">
-                  Laporan & Analisis
-                </CardTitle>
-                <CardDescription>
-                  Laporan tahunan lengkap dengan statistik dan analisis kontribusi Anda
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-emerald-200 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Shield className="h-12 w-12 text-emerald-600 mb-4" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">
-                  Keamanan Data
-                </CardTitle>
-                <CardDescription>
-                  Data finansial Anda tersimpan aman dengan enkripsi tingkat bank
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-emerald-200 hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Users className="h-12 w-12 text-emerald-600 mb-4" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">
-                  Multi-User
-                </CardTitle>
-                <CardDescription>
-                  Kelola data zakat untuk seluruh keluarga dengan akun terpisah yang aman
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          <div className="text-center mt-12">
+            <Button
+              size="lg"
+              onClick={() => setLocation('/donasi')}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
+            >
+              Donasi Sekarang
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Programs Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                Mengapa Memilih SIPZ?
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="h-6 w-6 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="h-2 w-2 bg-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Perhitungan Akurat</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Menggunakan data nisab terkini dan formula yang sesuai dengan ketentuan syariah
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="h-6 w-6 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="h-2 w-2 bg-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Mudah Digunakan</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Interface yang intuitif dan user-friendly untuk semua kalangan
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="h-6 w-6 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="h-2 w-2 bg-white rounded-full"></div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Laporan Komprehensif</h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Dapatkan laporan detail untuk keperluan administrasi dan pelaporan
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900 dark:to-teal-900 rounded-lg p-8 text-center">
-              <Building2 className="h-24 w-24 text-emerald-600 mx-auto mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                Mulai Mengelola Zakat Anda Hari Ini
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Bergabunglah dengan ribuan Muslim yang telah mempercayakan pengelolaan zakat mereka kepada SIPZ
-              </p>
-              <Button 
-                size="lg"
-                onClick={() => window.location.href = '/api/login'}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
-              >
-                Daftar Gratis
-              </Button>
-            </div>
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">
+            Program Kami
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
+            SIPZ memiliki 6 pilar program utama dengan tujuan besar mengentaskan kemiskinan
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {programs.map((program, index) => (
+              <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-shadow">
+                <CardHeader>
+                  <program.icon className="h-12 w-12 text-emerald-600 mb-4" />
+                  <CardTitle className="text-emerald-800 dark:text-emerald-200">
+                    {program.title}
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    {program.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant="link"
+                    className="text-emerald-600 p-0 h-auto flex items-center"
+                    onClick={() => setLocation(program.link)}
+                  >
+                    Selengkapnya <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-emerald-800 dark:bg-emerald-950 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <Building2 className="h-8 w-8" />
-              <span className="text-xl font-bold">SIPZ</span>
-            </div>
-            <div className="text-center md:text-right">
-              <p className="text-emerald-200">
-                © 2025 Sistem Informasi Pengelolaan Zakat. 
-              </p>
-              <p className="text-emerald-300 text-sm mt-1">
-                Membantu umat Muslim menjalankan kewajiban zakat dengan mudah dan tepat.
-              </p>
-            </div>
+      {/* About Us Section */}
+      <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">
+            Tentang Kami
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-12">
+            SIPZ adalah lembaga filantropi dan kemanusiaan yang bergerak untuk pemberdayaan umat (Empowering People) dan kemanusiaan.
+            Pemberdayaannya bergulir melalui pengelolaan dana zakat, infak, sedekah dan wakaf (Ziswaf), serta dana sosial lainnya
+            yang terkelola secara modern dan amanah.
+          </p>
+
+          <div className="text-center">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setLocation('/tentang')}
+              className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+            >
+              Pelajari Lebih Lanjut
+            </Button>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* News Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-6">
+            Berita Pilihan
+          </h2>
+          <p className="text-center text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12">
+            Aktivitas ikhtiar SIPZ untuk terus menebar kebaikan melalui berbagai kolaborAksi.
+          </p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {news.map((item, index) => (
+              <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                <div className="h-48 bg-gray-200 dark:bg-gray-700 relative">
+                  {/* Replace with actual image when available */}
+                  <div className="absolute bottom-0 left-0 bg-emerald-600 text-white px-3 py-1 text-sm">
+                    {item.category}
+                  </div>
+                </div>
+                <CardHeader className="pt-4 pb-2">
+                  <CardTitle className="text-lg text-emerald-800 dark:text-emerald-200 hover:text-emerald-600 cursor-pointer">
+                    {item.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-500 text-sm mb-3">{item.date}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                    {item.excerpt}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setLocation('/berita')}
+              className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+            >
+              Baca Semua Berita
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Volunteer Section */}
+      <section className="py-16 px-4 bg-emerald-600 text-white">
+        <div className="container mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-6">
+            Bantu lebih banyak dengan bergabung sebagai Relawan SIPZ!
+          </h2>
+          <p className="text-lg max-w-2xl mx-auto mb-10">
+            Selain menjadi donatur, Anda dapat turut aktif dalam program dan kegiatan kami secara langsung dengan bergabung sebagai #relawanSIPZ!
+          </p>
+          <div className="flex flex-col md:flex-row justify-center gap-4">
+            <Button
+              size="lg"
+              onClick={() => setLocation('/relawan')}
+              className="bg-white hover:bg-gray-100 text-emerald-600 px-8"
+            >
+              Gabung Sekarang
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setLocation('/aksi-relawan')}
+              className="border-white text-white hover:bg-emerald-700 px-8"
+            >
+              Lihat Aksi Kami
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

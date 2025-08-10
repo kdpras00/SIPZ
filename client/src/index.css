@@ -79,73 +79,268 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  /* Ensure menu items don't get cut off */
+  .truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Ensure proper layout for authenticated pages */
+  @media (min-width: 768px) {
+    .md\:pl-72 {
+      padding-left: 18rem;
+      /* 72px / 4 = 18rem */
+    }
+
+    .md\:w-72 {
+      width: 18rem;
+      /* 72px / 4 = 18rem */
+    }
   }
 }
 
 @layer utilities {
-  .text-islamic-50 { color: var(--islamic-50); }
-  .text-islamic-100 { color: var(--islamic-100); }
-  .text-islamic-200 { color: var(--islamic-200); }
-  .text-islamic-300 { color: var(--islamic-300); }
-  .text-islamic-400 { color: var(--islamic-400); }
-  .text-islamic-500 { color: var(--islamic-500); }
-  .text-islamic-600 { color: var(--islamic-600); }
-  .text-islamic-700 { color: var(--islamic-700); }
-  .text-islamic-800 { color: var(--islamic-800); }
-  .text-islamic-900 { color: var(--islamic-900); }
+  .text-islamic-50 {
+    color: var(--islamic-50);
+  }
 
-  .bg-islamic-50 { background-color: var(--islamic-50); }
-  .bg-islamic-100 { background-color: var(--islamic-100); }
-  .bg-islamic-200 { background-color: var(--islamic-200); }
-  .bg-islamic-300 { background-color: var(--islamic-300); }
-  .bg-islamic-400 { background-color: var(--islamic-400); }
-  .bg-islamic-500 { background-color: var(--islamic-500); }
-  .bg-islamic-600 { background-color: var(--islamic-600); }
-  .bg-islamic-700 { background-color: var(--islamic-700); }
-  .bg-islamic-800 { background-color: var(--islamic-800); }
-  .bg-islamic-900 { background-color: var(--islamic-900); }
+  .text-islamic-100 {
+    color: var(--islamic-100);
+  }
 
-  .border-islamic-50 { border-color: var(--islamic-50); }
-  .border-islamic-100 { border-color: var(--islamic-100); }
-  .border-islamic-200 { border-color: var(--islamic-200); }
-  .border-islamic-300 { border-color: var(--islamic-300); }
-  .border-islamic-400 { border-color: var(--islamic-400); }
-  .border-islamic-500 { border-color: var(--islamic-500); }
-  .border-islamic-600 { border-color: var(--islamic-600); }
-  .border-islamic-700 { border-color: var(--islamic-700); }
-  .border-islamic-800 { border-color: var(--islamic-800); }
-  .border-islamic-900 { border-color: var(--islamic-900); }
+  .text-islamic-200 {
+    color: var(--islamic-200);
+  }
 
-  .text-gold-50 { color: var(--gold-50); }
-  .text-gold-100 { color: var(--gold-100); }
-  .text-gold-200 { color: var(--gold-200); }
-  .text-gold-300 { color: var(--gold-300); }
-  .text-gold-400 { color: var(--gold-400); }
-  .text-gold-500 { color: var(--gold-500); }
-  .text-gold-600 { color: var(--gold-600); }
-  .text-gold-700 { color: var(--gold-700); }
-  .text-gold-800 { color: var(--gold-800); }
-  .text-gold-900 { color: var(--gold-900); }
+  .text-islamic-300 {
+    color: var(--islamic-300);
+  }
 
-  .bg-gold-50 { background-color: var(--gold-50); }
-  .bg-gold-100 { background-color: var(--gold-100); }
-  .bg-gold-200 { background-color: var(--gold-200); }
-  .bg-gold-300 { background-color: var(--gold-300); }
-  .bg-gold-400 { background-color: var(--gold-400); }
-  .bg-gold-500 { background-color: var(--gold-500); }
-  .bg-gold-600 { background-color: var(--gold-600); }
-  .bg-gold-700 { background-color: var(--gold-700); }
-  .bg-gold-800 { background-color: var(--gold-800); }
-  .bg-gold-900 { background-color: var(--gold-900); }
+  .text-islamic-400 {
+    color: var(--islamic-400);
+  }
 
-  .border-gold-50 { border-color: var(--gold-50); }
-  .border-gold-100 { border-color: var(--gold-100); }
-  .border-gold-200 { border-color: var(--gold-200); }
-  .border-gold-300 { border-color: var(--gold-300); }
-  .border-gold-400 { border-color: var(--gold-400); }
-  .border-gold-500 { border-color: var(--gold-500); }
-  .border-gold-600 { border-color: var(--gold-600); }
-  .border-gold-700 { border-color: var(--gold-700); }
-  .border-gold-800 { border-color: var(--gold-800); }
-  .border-gold-900 { border-color: var(--gold-900); }
+  .text-islamic-500 {
+    color: var(--islamic-500);
+  }
+
+  .text-islamic-600 {
+    color: var(--islamic-600);
+  }
+
+  .text-islamic-700 {
+    color: var(--islamic-700);
+  }
+
+  .text-islamic-800 {
+    color: var(--islamic-800);
+  }
+
+  .text-islamic-900 {
+    color: var(--islamic-900);
+  }
+
+  .bg-islamic-50 {
+    background-color: var(--islamic-50);
+  }
+
+  .bg-islamic-100 {
+    background-color: var(--islamic-100);
+  }
+
+  .bg-islamic-200 {
+    background-color: var(--islamic-200);
+  }
+
+  .bg-islamic-300 {
+    background-color: var(--islamic-300);
+  }
+
+  .bg-islamic-400 {
+    background-color: var(--islamic-400);
+  }
+
+  .bg-islamic-500 {
+    background-color: var(--islamic-500);
+  }
+
+  .bg-islamic-600 {
+    background-color: var(--islamic-600);
+  }
+
+  .bg-islamic-700 {
+    background-color: var(--islamic-700);
+  }
+
+  .bg-islamic-800 {
+    background-color: var(--islamic-800);
+  }
+
+  .bg-islamic-900 {
+    background-color: var(--islamic-900);
+  }
+
+  .border-islamic-50 {
+    border-color: var(--islamic-50);
+  }
+
+  .border-islamic-100 {
+    border-color: var(--islamic-100);
+  }
+
+  .border-islamic-200 {
+    border-color: var(--islamic-200);
+  }
+
+  .border-islamic-300 {
+    border-color: var(--islamic-300);
+  }
+
+  .border-islamic-400 {
+    border-color: var(--islamic-400);
+  }
+
+  .border-islamic-500 {
+    border-color: var(--islamic-500);
+  }
+
+  .border-islamic-600 {
+    border-color: var(--islamic-600);
+  }
+
+  .border-islamic-700 {
+    border-color: var(--islamic-700);
+  }
+
+  .border-islamic-800 {
+    border-color: var(--islamic-800);
+  }
+
+  .border-islamic-900 {
+    border-color: var(--islamic-900);
+  }
+
+  .text-gold-50 {
+    color: var(--gold-50);
+  }
+
+  .text-gold-100 {
+    color: var(--gold-100);
+  }
+
+  .text-gold-200 {
+    color: var(--gold-200);
+  }
+
+  .text-gold-300 {
+    color: var(--gold-300);
+  }
+
+  .text-gold-400 {
+    color: var(--gold-400);
+  }
+
+  .text-gold-500 {
+    color: var(--gold-500);
+  }
+
+  .text-gold-600 {
+    color: var(--gold-600);
+  }
+
+  .text-gold-700 {
+    color: var(--gold-700);
+  }
+
+  .text-gold-800 {
+    color: var(--gold-800);
+  }
+
+  .text-gold-900 {
+    color: var(--gold-900);
+  }
+
+  .bg-gold-50 {
+    background-color: var(--gold-50);
+  }
+
+  .bg-gold-100 {
+    background-color: var(--gold-100);
+  }
+
+  .bg-gold-200 {
+    background-color: var(--gold-200);
+  }
+
+  .bg-gold-300 {
+    background-color: var(--gold-300);
+  }
+
+  .bg-gold-400 {
+    background-color: var(--gold-400);
+  }
+
+  .bg-gold-500 {
+    background-color: var(--gold-500);
+  }
+
+  .bg-gold-600 {
+    background-color: var(--gold-600);
+  }
+
+  .bg-gold-700 {
+    background-color: var(--gold-700);
+  }
+
+  .bg-gold-800 {
+    background-color: var(--gold-800);
+  }
+
+  .bg-gold-900 {
+    background-color: var(--gold-900);
+  }
+
+  .border-gold-50 {
+    border-color: var(--gold-50);
+  }
+
+  .border-gold-100 {
+    border-color: var(--gold-100);
+  }
+
+  .border-gold-200 {
+    border-color: var(--gold-200);
+  }
+
+  .border-gold-300 {
+    border-color: var(--gold-300);
+  }
+
+  .border-gold-400 {
+    border-color: var(--gold-400);
+  }
+
+  .border-gold-500 {
+    border-color: var(--gold-500);
+  }
+
+  .border-gold-600 {
+    border-color: var(--gold-600);
+  }
+
+  .border-gold-700 {
+    border-color: var(--gold-700);
+  }
+
+  .border-gold-800 {
+    border-color: var(--gold-800);
+  }
+
+  .border-gold-900 {
+    border-color: var(--gold-900);
+  }
 }

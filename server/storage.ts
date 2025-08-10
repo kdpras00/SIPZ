@@ -18,13 +18,15 @@ import {
   type NotificationSettings,
   type InsertNotificationSettings
 } from "@shared/schema";
-import { db } from "./db";
+import pool, { db, executeRawQuery } from "./db";
 import { eq, desc, and, gte, lte, sum, count } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
   // User operations for Replit Auth
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(userData: any): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
 
   // Zakat calculations
@@ -63,23 +65,95 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User operations for Replit Auth
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    try {
+      const result = await executeRawQuery(
+        'SELECT * FROM users WHERE id = ?',
+        [id]
+      );
+
+      if (result.success && Array.isArray(result.result) && result.result.length > 0) {
+        return result.result[0] as User;
+      }
+
+      return undefined;
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return undefined;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const result = await executeRawQuery(
+        'SELECT * FROM users WHERE email = ?',
+        [email]
+      );
+
+      if (result.success && Array.isArray(result.result) && result.result.length > 0) {
+        return result.result[0] as User;
+      }
+
+      return undefined;
+    } catch (error) {
+      console.error("Error fetching user by email:", error);
+      return undefined;
+    }
+  }
+
+  async createUser(userData: any): Promise<User> {
+    try {
+      const { id, email, firstName, lastName, password, profileImageUrl } = userData;
+
+      const result = await executeRawQuery(
+        'INSERT INTO users (id, email, first_name, last_name, password, profile_image_url) VALUES (?, ?, ?, ?, ?, ?)',
+        [id, email, firstName, lastName, password, profileImageUrl || null]
+      );
+
+      if (result.success) {
+        return {
+          id,
+          email,
+          firstName,
+          lastName,
+          profileImageUrl,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        } as User;
+      }
+
+      throw new Error("Failed to create user");
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
+    try {
+      // Check if user exists
+      const existingUser = await this.getUser(userData.id);
+
+      if (existingUser) {
+        // Update user
+        const { id, email, firstName, lastName, profileImageUrl } = userData;
+        await executeRawQuery(
+          'UPDATE users SET email = ?, first_name = ?, last_name = ?, profile_image_url = ?, updated_at = NOW() WHERE id = ?',
+          [email, firstName, lastName, profileImageUrl, id]
+        );
+
+        return {
+          ...existingUser,
           ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+          updatedAt: new Date()
+        };
+      } else {
+        // Insert new user
+        return await this.createUser(userData);
+      }
+    } catch (error) {
+      console.error("Error upserting user:", error);
+      throw error;
+    }
   }
 
   // Zakat calculations
@@ -251,7 +325,7 @@ export class DatabaseStorage implements IStorage {
           lte(zakatPayments.paidDate, endDate)
         )
       );
-    
+
     return Number(result?.total || 0);
   }
 
@@ -269,7 +343,7 @@ export class DatabaseStorage implements IStorage {
           lte(infaqShadaqoh.date, endDate)
         )
       );
-    
+
     return Number(result?.total || 0);
   }
 
@@ -289,7 +363,7 @@ export class DatabaseStorage implements IStorage {
     if (year) {
       const startDate = new Date(year, 0, 1);
       const endDate = new Date(year + 1, 0, 1);
-      
+
       zakatQuery = zakatQuery.where(
         and(
           eq(zakatPayments.userId, userId),
